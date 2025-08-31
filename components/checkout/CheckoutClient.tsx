@@ -1,9 +1,7 @@
 "use client"
 
-import type React from "react"
-
-import { useState, useEffect } from "react"
-import { useRouter, useParams } from "next/navigation"
+import React, { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -12,7 +10,11 @@ import PaymentForm from "@/components/payment/PaymentForm"
 import { useToast } from "@/hooks/use-toast"
 import { ArrowLeft, Package, Truck } from "lucide-react"
 
-export default function CheckoutPage() {
+interface CheckoutClientProps {
+  orderId: string
+}
+
+export default function CheckoutClient({ orderId }: CheckoutClientProps) {
   const [order, setOrder] = useState<any>(null)
   const [shippingAddress, setShippingAddress] = useState({
     firstName: "",
@@ -29,17 +31,13 @@ export default function CheckoutPage() {
   const router = useRouter()
   const { toast } = useToast()
 
-  // get the dynamic route param from the client hook
-  const params = useParams()
-  const orderId = params?.orderId as string | undefined
-
   useEffect(() => {
     fetchOrder()
   }, [orderId])
 
   const fetchOrder = async () => {
     try {
-  const response = await fetch(`/api/orders/${orderId}`, {
+      const response = await fetch(`/api/orders/${orderId}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
@@ -71,7 +69,7 @@ export default function CheckoutPage() {
     e.preventDefault()
 
     try {
-  const response = await fetch(`/api/orders/${orderId}/shipping`, {
+      const response = await fetch(`/api/orders/${orderId}/shipping`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -99,7 +97,7 @@ export default function CheckoutPage() {
   }
 
   const handlePaymentSuccess = () => {
-  router.push(`/order-confirmation/${orderId}`)
+    router.push(`/order-confirmation/${orderId}`)
   }
 
   const handlePaymentError = (error: string) => {
@@ -255,13 +253,8 @@ export default function CheckoutPage() {
               </Card>
             )}
 
-            {step === "payment" && orderId && (
-              <PaymentForm
-                orderId={orderId}
-                amount={order.total}
-                onSuccess={handlePaymentSuccess}
-                onError={handlePaymentError}
-              />
+            {step === "payment" && (
+              <PaymentForm orderId={orderId} amount={order.total} onSuccess={handlePaymentSuccess} onError={handlePaymentError} />
             )}
           </div>
         </div>
