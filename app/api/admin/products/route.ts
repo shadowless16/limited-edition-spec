@@ -24,6 +24,10 @@ export async function GET(request: NextRequest) {
           totalSold: 0, // TODO: Calculate from orders
         },
       },
+      // add a computed field separately, then exclude the joined array
+      {
+        $addFields: { currentPhase: "$status" },
+      },
       {
         $project: {
           waitlistEntries: 0, // Remove the joined data to keep response clean
@@ -79,11 +83,12 @@ export async function POST(request: NextRequest) {
       variants: z.array(VariantSchema).optional(),
       status: z.string().optional(),
       currentPhase: z.string().optional(),
-      releasePhases: z.object({
+  releasePhases: z.object({
         waitlist: ReleasePhaseSchema.optional(),
         originals: ReleasePhaseSchema.optional(),
         echo: ReleasePhaseSchema.optional(),
       }).optional(),
+  paymentOptions: z.array(z.string()).optional(),
     })
 
     const parsed = ProductInput.safeParse(body)
@@ -91,7 +96,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid product payload", details: parsed.error.format() }, { status: 400 })
     }
 
-  const { sku, name, basePrice, images = [], variants = [], status, currentPhase, description, releasePhases: inputReleasePhases } = parsed.data;
+  const { sku, name, basePrice, images = [], variants = [], status, currentPhase, description, releasePhases: inputReleasePhases, paymentOptions = [] } = parsed.data;
 
     // Normalize variants: client uses `reserved` but schema expects `reservedStock`.
     const normalizedVariants = Array.isArray(variants)
@@ -168,6 +173,7 @@ export async function POST(request: NextRequest) {
       basePrice,
       images,
       variants: normalizedVariants,
+  paymentOptions,
       status: finalStatus,
   releasePhases: finalReleasePhases,
     })

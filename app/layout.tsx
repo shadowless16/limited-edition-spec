@@ -16,7 +16,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
+    {/* Temporary: suppressHydrationWarning added to reduce false-positive hydration warnings
+      caused by browser extensions injecting attributes (e.g., Grammarly). Prefer to
+      reproduce in incognito with extensions disabled and remove this flag once fixed. */}
+    <body suppressHydrationWarning className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
   {children}
   <Analytics />
   <Toaster />

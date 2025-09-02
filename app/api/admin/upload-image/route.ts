@@ -31,9 +31,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "File size must be less than 5MB" }, { status: 400 })
     }
 
-    const imageUrl = await uploadImage(file)
+  const uploadResult = await uploadImage(file)
 
-    return NextResponse.json({ url: imageUrl })
+  return NextResponse.json({ url: uploadResult.url, publicId: uploadResult.publicId })
   } catch (error) {
     console.error("Error uploading image:", error)
     return NextResponse.json({ error: "Failed to upload image" }, { status: 500 })

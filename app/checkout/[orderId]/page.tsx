@@ -26,6 +26,7 @@ export default function CheckoutPage() {
   })
   const [step, setStep] = useState<"shipping" | "payment">("shipping")
   const [isLoading, setIsLoading] = useState(true)
+  const [globalPaymentMethods, setGlobalPaymentMethods] = useState<any[]>([])
   const router = useRouter()
   const { toast } = useToast()
 
@@ -66,6 +67,20 @@ export default function CheckoutPage() {
       setIsLoading(false)
     }
   }
+
+  useEffect(() => {
+    // public payment method details used for showing instructions on the payment step
+    ;(async () => {
+      try {
+        const resp = await fetch('/api/payment-methods')
+        if (!resp.ok) return
+        const data = await resp.json()
+        setGlobalPaymentMethods(data)
+      } catch (e) {
+        // ignore
+      }
+    })()
+  }, [])
 
   const handleShippingSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -259,6 +274,9 @@ export default function CheckoutPage() {
               <PaymentForm
                 orderId={orderId}
                 amount={order.total}
+                // available options are the keys of enabled global payment methods
+                availableOptions={(globalPaymentMethods || []).map((m: any) => m.key)}
+                methodDetails={globalPaymentMethods}
                 onSuccess={handlePaymentSuccess}
                 onError={handlePaymentError}
               />

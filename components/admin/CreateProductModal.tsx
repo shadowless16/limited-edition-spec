@@ -26,6 +26,7 @@ interface ProductForEdit {
   variants: Variant[]
   images: string[]
   releasePhases?: any
+  paymentOptions?: string[]
 }
 
 interface Variant {
@@ -52,6 +53,7 @@ export default function CreateProductModal({ onProductCreated, product, onProduc
     basePrice: "",
     currentPhase: "waitlist" as "waitlist" | "originals" | "echo",
     status: "active" as "active" | "paused" | "ended",
+  paymentOptions: [] as string[],
   })
   const [releasePhases, setReleasePhases] = useState({
     waitlistStart: "",
@@ -119,6 +121,9 @@ export default function CreateProductModal({ onProductCreated, product, onProduc
       const url = product ? `/api/admin/products/${product._id}` : "/api/admin/products"
       const method = product ? "PATCH" : "POST"
 
+      // sanitize images: ensure only non-empty strings are sent
+      const sanitizedImages = Array.isArray(images) ? images.filter((i) => typeof i === "string" && i.trim().length > 0) : []
+
       const response = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
@@ -126,7 +131,7 @@ export default function CreateProductModal({ onProductCreated, product, onProduc
           ...formData,
           basePrice: Number.parseInt(formData.basePrice) * 100, // Convert to cents
           variants: variants.filter((v) => v.color && v.material),
-          images,
+          images: sanitizedImages,
           releasePhases: releasePhasesPayload,
         }),
       })
@@ -144,6 +149,7 @@ export default function CreateProductModal({ onProductCreated, product, onProduc
           basePrice: "",
           currentPhase: "waitlist",
           status: "active",
+          paymentOptions: [],
         })
         setVariants([{ color: "", material: "", stock: 0, reserved: 0 }])
         setImages([])
@@ -182,6 +188,10 @@ export default function CreateProductModal({ onProductCreated, product, onProduc
   // Prefill when editing
   useEffect(() => {
     if (open && product) {
+  // debug: surface paymentOptions when editing so we can confirm the field is present
+  // (helps troubleshoot 'payment options not visible' reports)
+  // eslint-disable-next-line no-console
+  console.debug("[CreateProductModal] prefill paymentOptions=", product.paymentOptions)
       setFormData({
         name: product.name || "",
         description: product.description || "",
@@ -189,6 +199,7 @@ export default function CreateProductModal({ onProductCreated, product, onProduc
         basePrice: ((product.basePrice || 0) / 100).toString(),
         currentPhase: product.currentPhase || "waitlist",
         status: product.status || "active",
+  paymentOptions: product.paymentOptions || [],
       })
       setVariants(product.variants?.length ? product.variants : [{ color: "", material: "", stock: 0, reserved: 0 }])
       setImages(product.images || [])
@@ -328,6 +339,47 @@ export default function CreateProductModal({ onProductCreated, product, onProduc
                     </SelectContent>
                   </Select>
                 </div>
+                {/* Payment Options moved into a dedicated card below for visibility */}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Payment Options - separate card to make it more visible in the modal */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Payment Options</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground mb-2">Select which payment methods are accepted for this product. These are shown on the admin list and at checkout.</p>
+              <div className="space-y-2">
+                <label className="flex items-center gap-2">
+                  <input
+                    data-testid="payment-bank"
+                    type="checkbox"
+                    checked={formData.paymentOptions.includes("bank_transfer")}
+                    onChange={() => {
+                      const next = formData.paymentOptions.includes("bank_transfer")
+                        ? formData.paymentOptions.filter((p) => p !== "bank_transfer")
+                        : [...formData.paymentOptions, "bank_transfer"]
+                      setFormData({ ...formData, paymentOptions: next })
+                    }}
+                  />
+                  Bank Transfer
+                </label>
+                <label className="flex items-center gap-2">
+                  <input
+                    data-testid="payment-crypto"
+                    type="checkbox"
+                    checked={formData.paymentOptions.includes("crypto")}
+                    onChange={() => {
+                      const next = formData.paymentOptions.includes("crypto")
+                        ? formData.paymentOptions.filter((p) => p !== "crypto")
+                        : [...formData.paymentOptions, "crypto"]
+                      setFormData({ ...formData, paymentOptions: next })
+                    }}
+                  />
+                  Crypto
+                </label>
               </div>
             </CardContent>
           </Card>

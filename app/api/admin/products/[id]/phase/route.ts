@@ -26,14 +26,20 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
     // `params` may be a Promise in Next.js App Router; await before using
     const { id } = await params as { id: string }
 
-    const product = await Product.findByIdAndUpdate(
-      id,
-      {
-        currentPhase: phase,
-        updatedAt: new Date(),
-      },
-      { new: true },
-    )
+    // Update canonical `status` field (schema uses `status`) and mark release phases active appropriately.
+    const isWaitlist = phase === "waitlist"
+    const isOriginals = phase === "originals"
+    const isEcho = phase === "echo"
+
+    const update: any = {
+      status: phase,
+      updatedAt: new Date(),
+      "releasePhases.waitlist.isActive": isWaitlist,
+      "releasePhases.originals.isActive": isOriginals,
+      "releasePhases.echo.isActive": isEcho,
+    }
+
+    const product = await Product.findByIdAndUpdate(id, update, { new: true })
 
     if (!product) {
       return NextResponse.json({ error: "Product not found" }, { status: 404 })

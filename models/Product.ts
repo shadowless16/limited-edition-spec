@@ -34,6 +34,8 @@ export interface IProduct extends Document {
   basePrice: number
   images: string[]
   variants: IVariant[]
+  // Payment options allowed for this product (e.g. bank_transfer, crypto)
+  paymentOptions?: string[]
   releasePhases: IReleasePhases
   status: "draft" | "waitlist" | "originals" | "echo" | "ended"
   createdAt: Date
@@ -82,6 +84,7 @@ const ProductSchema = new Schema<IProduct>(
       },
     ],
     variants: [VariantSchema],
+  paymentOptions: [String],
     releasePhases: {
       waitlist: {
         ...ReleasePhaseSchema.obj,

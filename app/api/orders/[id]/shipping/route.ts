@@ -22,8 +22,11 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     // `params` may be a Promise in Next.js App Router; await before using
     const { id } = await params as { id: string }
 
+    // Token payloads may include either `id` or `userId` depending on signing.
+    const authUserId = (user as any).userId || (user as any).id
+
     const order = await Order.findOneAndUpdate(
-      { _id: id, userId: user.id },
+      { _id: id, userId: authUserId },
       {
         shippingAddress,
         updatedAt: new Date(),

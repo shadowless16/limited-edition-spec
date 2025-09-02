@@ -2,12 +2,17 @@
 
 import type React from "react"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { useToast } from "@/hooks/use-toast"
 import { Upload, X } from "lucide-react"
 import Image from "next/image"
+
+interface UploadEntry {
+  url: string
+  publicId?: string
+}
 
 interface ImageUploadProps {
   images: string[]
@@ -19,6 +24,13 @@ export default function ImageUpload({ images, onImagesChange, maxImages = 5 }: I
   const [isUploading, setIsUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const { toast } = useToast()
+  // track uploaded entries locally so we can delete by publicId
+  const [entries, setEntries] = useState<UploadEntry[]>(images.map((url) => ({ url })))
+
+  // keep entries and parent `images` in sync
+  useEffect(() => {
+    setEntries(images.map((url) => ({ url })))
+  }, [images])
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || [])
@@ -35,25 +47,45 @@ export default function ImageUpload({ images, onImagesChange, maxImages = 5 }: I
 
     setIsUploading(true)
     try {
+      // Ensure admin token is present for authenticated upload
+      const token = typeof window !== "undefined" ? localStorage.getItem("token") : null
+      if (!token) {
+        toast({
+          title: "Sign in required",
+          description: "You must be signed in as an admin to upload images",
+          variant: "destructive",
+        })
+        setIsUploading(false)
+        return
+      }
+
       const uploadPromises = files.map(async (file) => {
         const formData = new FormData()
         formData.append("file", file)
 
         const response = await fetch("/api/admin/upload-image", {
           method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
           body: formData,
         })
 
         if (!response.ok) {
-          throw new Error("Upload failed")
+          const err = await response.json().catch(() => ({}))
+          throw new Error(err?.error || "Upload failed")
         }
 
         const data = await response.json()
-        return data.url
+        // return an UploadEntry so callers can track publicId for deletions
+        return { url: data.url, publicId: data.publicId }
       })
 
-      const newImageUrls = await Promise.all(uploadPromises)
-      onImagesChange([...images, ...newImageUrls])
+      const newEntries = await Promise.all(uploadPromises)
+      // merge entries (both are UploadEntry[])
+      const merged = [...entries, ...newEntries]
+      setEntries(merged)
+      onImagesChange(merged.map((e) => e.url))
 
       toast({
         title: "Images uploaded",
@@ -73,9 +105,26 @@ export default function ImageUpload({ images, onImagesChange, maxImages = 5 }: I
     }
   }
 
-  const removeImage = (index: number) => {
-    const newImages = images.filter((_, i) => i !== index)
-    onImagesChange(newImages)
+  const removeImage = async (index: number) => {
+    const entry = entries[index]
+    // If we have a publicId, attempt to delete from Cloudinary
+    if (entry?.publicId) {
+      try {
+        const token = typeof window !== "undefined" ? localStorage.getItem("token") : null
+        await fetch("/api/admin/delete-image", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+          body: JSON.stringify({ publicId: entry.publicId }),
+        })
+      } catch (e) {
+        // ignore delete failures but show a toast
+        toast({ title: "Warning", description: "Failed to delete remote image", variant: "destructive" })
+      }
+    }
+
+    const newEntries = entries.filter((_, i) => i !== index)
+    setEntries(newEntries)
+    onImagesChange(newEntries.map((e) => e.url))
   }
 
   return (

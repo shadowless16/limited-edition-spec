@@ -162,17 +162,18 @@ export default function ProductDetail({ product, user }: ProductDetailProps) {
 
     setIsLoading(true)
     try {
-      const response = await fetch("/api/orders", {
+      // Add item to server-side cart
+      const token = localStorage.getItem("token")
+      const headers: Record<string, string> = { "Content-Type": "application/json" }
+      if (token) headers.Authorization = `Bearer ${token}`
+
+      const response = await fetch("/api/cart", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
+        headers,
         body: JSON.stringify({
           productId: product._id,
           variantId: currentVariant.color ? `${currentVariant.color}-${currentVariant.material}` : undefined,
           quantity: 1,
-          pricing: pricingResult,
         }),
       })
 
@@ -181,9 +182,14 @@ export default function ProductDetail({ product, user }: ProductDetailProps) {
       if (response.ok) {
         toast({
           title: "Added to cart!",
-          description: "Redirecting to checkout...",
+          description: "Item added to your cart. You can continue shopping or go to the cart to checkout.",
         })
-        window.location.href = `/checkout/${data.orderId}`
+        // notify global listeners (header) that cart changed
+        try {
+          window.dispatchEvent(new Event("cart-updated"))
+        } catch (e) {
+          // ignore (server-side render or non-browser)
+        }
       } else {
         toast({
           title: "Error",

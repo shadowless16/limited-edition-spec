@@ -10,6 +10,14 @@ export interface IUser extends Document {
   isAdmin?: boolean
   waitlistEntries: mongoose.Types.ObjectId[]
   orders: mongoose.Types.ObjectId[]
+  // cart stores transient cart items for the user
+  cart?: Array<{
+    _id?: mongoose.Types.ObjectId
+    productId: mongoose.Types.ObjectId
+    variantId?: string
+    quantity?: number
+    priceSnapshot?: number
+  }>
   createdAt: Date
   updatedAt: Date
 }
@@ -46,6 +54,14 @@ const UserSchema = new Schema<IUser>(
       type: Boolean,
       default: false,
     },
+      cart: [
+        {
+          productId: { type: Schema.Types.ObjectId, ref: "Product" },
+          variantId: { type: String },
+          quantity: { type: Number, default: 1, min: 1 },
+          priceSnapshot: { type: Number, default: 0 },
+        },
+      ],
     isAdmin: {
       type: Boolean,
       default: false,

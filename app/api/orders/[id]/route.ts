@@ -23,8 +23,8 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
   const authUserId = (user as any).userId || (user as any).id
 
   const order = await Order.findOne({ _id: id, userId: authUserId }).populate(
-      "items.productId",
-      "name images",
+  "items.productId",
+  "name images paymentOptions",
     )
 
     if (!order) {

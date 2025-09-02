@@ -41,15 +41,43 @@ export default function Header() {
       if (response.ok) {
         const userData = await response.json()
         setUser(userData)
+        // fetch cart count after we have a token
+        try {
+          const c = await fetch("/api/cart", { headers: { Authorization: `Bearer ${token}` } })
+          if (c.ok) {
+            const cd = await c.json()
+            setCartCount(Array.isArray(cd.items) ? cd.items.length : 0)
+          }
+        } catch (e) {
+          // ignore cart fetch errors
+        }
       }
     } catch (error) {
       console.error("Error fetching user data:", error)
     }
   }
 
+  // Listen for cart updates triggered elsewhere in the app (e.g. after adding to cart)
+  useEffect(() => {
+    const handler = () => {
+      const token = localStorage.getItem("token")
+      if (!token) return
+      fetch("/api/cart", { headers: { Authorization: `Bearer ${token}` } })
+        .then((r) => r.ok ? r.json() : null)
+        .then((data) => {
+          if (data && Array.isArray(data.items)) setCartCount(data.items.length)
+        })
+        .catch(() => {})
+    }
+
+    window.addEventListener("cart-updated", handler)
+    return () => window.removeEventListener("cart-updated", handler)
+  }, [])
+
   const handleSignOut = () => {
     localStorage.removeItem("token")
     setUser(null)
+  setCartCount(0)
     window.location.reload()
   }
 

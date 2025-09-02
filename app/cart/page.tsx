@@ -33,7 +33,11 @@ export default function CartPage() {
 
   const fetchCart = async () => {
     try {
-      const response = await fetch("/api/cart")
+  const token = localStorage.getItem("token")
+  const headers: Record<string, string> = {}
+  if (token) headers.Authorization = `Bearer ${token}`
+
+  const response = await fetch("/api/cart", { headers })
       if (response.ok) {
         const data = await response.json()
         setCartItems(data.items || [])
@@ -52,9 +56,13 @@ export default function CartPage() {
     }
 
     try {
+      const token = localStorage.getItem("token")
+      const headers: Record<string, string> = { "Content-Type": "application/json" }
+      if (token) headers.Authorization = `Bearer ${token}`
+
       const response = await fetch("/api/cart", {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify({ itemId, quantity: newQuantity }),
       })
 
@@ -68,9 +76,13 @@ export default function CartPage() {
 
   const removeItem = async (itemId: string) => {
     try {
+      const token = localStorage.getItem("token")
+      const headers: Record<string, string> = { "Content-Type": "application/json" }
+      if (token) headers.Authorization = `Bearer ${token}`
+
       const response = await fetch("/api/cart", {
         method: "DELETE",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify({ itemId }),
       })
 
@@ -211,7 +223,24 @@ export default function CartPage() {
                   <span>Total</span>
                   <span>{formatPrice(total)}</span>
                 </div>
-                <Button className="w-full" size="lg">
+                <Button className="w-full" size="lg" onClick={async () => {
+                  try {
+                    const token = localStorage.getItem("token")
+                    const headers: Record<string, string> = { "Content-Type": "application/json" }
+                    if (token) headers.Authorization = `Bearer ${token}`
+                    const resp = await fetch("/api/checkout/create", { method: "POST", headers })
+                    const data = await resp.json()
+                    if (resp.ok && data.orderId) {
+                      // navigate to dynamic checkout page
+                      window.location.href = `/checkout/${data.orderId}`
+                    } else {
+                      alert(data.error || "Failed to create order")
+                    }
+                  } catch (e) {
+                    console.error(e)
+                    alert("Failed to create order")
+                  }
+                }}>
                   Proceed to Checkout
                 </Button>
                 <Button variant="outline" className="w-full bg-transparent" asChild>
