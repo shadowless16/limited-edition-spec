@@ -8,8 +8,8 @@ export async function GET(request: NextRequest) {
   try {
     await connectToDatabase()
 
-    // Get all products with aggregated data
-    const products = await Product.aggregate([
+  // Get all products with aggregated data (including totalSold from Orders)
+  const products = await Product.aggregate([
       {
         $lookup: {
           from: "waitlistentries",
@@ -21,7 +21,24 @@ export async function GET(request: NextRequest) {
       {
         $addFields: {
           waitlistCount: { $size: "$waitlistEntries" },
-          totalSold: 0, // TODO: Calculate from orders
+        },
+      },
+      // compute totalSold by looking up order items that reference this product
+      {
+        $lookup: {
+          from: "orders",
+          let: { pid: "$_id" },
+          pipeline: [
+            { $unwind: "$items" },
+            { $match: { $expr: { $eq: ["$items.productId", "$$pid"] } } },
+            { $group: { _id: null, qty: { $sum: "$items.quantity" } } },
+          ],
+          as: "soldInfo",
+        },
+      },
+      {
+        $addFields: {
+          totalSold: { $ifNull: [{ $arrayElemAt: ["$soldInfo.qty", 0] }, 0] },
         },
       },
       // add a computed field separately, then exclude the joined array
@@ -89,6 +106,7 @@ export async function POST(request: NextRequest) {
         echo: ReleasePhaseSchema.optional(),
       }).optional(),
   paymentOptions: z.array(z.string()).optional(),
+  discountPercent: z.preprocess((v) => Number(v), z.number().min(0).max(100)).optional(),
     })
 
     const parsed = ProductInput.safeParse(body)
@@ -96,7 +114,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid product payload", details: parsed.error.format() }, { status: 400 })
     }
 
-  const { sku, name, basePrice, images = [], variants = [], status, currentPhase, description, releasePhases: inputReleasePhases, paymentOptions = [] } = parsed.data;
+  const { sku, name, basePrice, images = [], variants = [], status, currentPhase, description, releasePhases: inputReleasePhases, paymentOptions = [], discountPercent = 0 } = parsed.data;
 
     // Normalize variants: client uses `reserved` but schema expects `reservedStock`.
     const normalizedVariants = Array.isArray(variants)
@@ -174,6 +192,7 @@ export async function POST(request: NextRequest) {
       images,
       variants: normalizedVariants,
   paymentOptions,
+  discountPercent,
       status: finalStatus,
   releasePhases: finalReleasePhases,
     })

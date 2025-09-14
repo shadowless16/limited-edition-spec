@@ -20,7 +20,7 @@ interface ProductDetailProps {
     description?: string
     basePrice: number
     images: string[]
-    status: "waitlist" | "originals" | "echo"
+    status: "waitlist" | "originals" | "echo" | "press"
     variants: Array<{
       color: string
       material: string
@@ -43,8 +43,11 @@ interface ProductDetailProps {
 export default function ProductDetail({ product, user }: ProductDetailProps) {
   const [selectedVariant, setSelectedVariant] = useState(0)
   const [email, setEmail] = useState(user?.email || "")
+  const [phone, setPhone] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [joinedEntry, setJoinedEntry] = useState<null | { position: number; status: string }>(null)
+  const [echoRequested, setEchoRequested] = useState(false)
+  const [settings, setSettings] = useState<any>(null)
   const { toast } = useToast()
 
   // Ensure we have a safe variants array and a fallback currentVariant to avoid runtime errors
@@ -71,6 +74,17 @@ export default function ProductDetail({ product, user }: ProductDetailProps) {
       return
     }
 
+    // Validate phone for guest joins
+    if (!token) {
+      const phoneVal = String(phone || "").trim()
+      const e164 = /^\+[1-9]\d{7,14}$/
+      if (!e164.test(phoneVal)) {
+        toast({ title: "Invalid WhatsApp number", description: "Enter phone in E.164 format, e.g. +15551234567", variant: "destructive" })
+        setIsLoading(false)
+        return
+      }
+    }
+
     setIsLoading(true)
     try {
       const token = localStorage.getItem("token")
@@ -82,7 +96,7 @@ export default function ProductDetail({ product, user }: ProductDetailProps) {
         },
         body: JSON.stringify({
           // only include email for guest joins
-          ...(token ? {} : { email }),
+          ...(token ? {} : { email, phone }),
           productId: product._id,
           variantId: currentVariant.color ? `${currentVariant.color}-${currentVariant.material}` : undefined,
         }),
@@ -96,7 +110,8 @@ export default function ProductDetail({ product, user }: ProductDetailProps) {
           description: `You're #${data.position} in line. We'll notify you when available.`,
         })
   setJoinedEntry({ position: data.position, status: "active" })
-        setEmail("")
+  setEmail("")
+  setPhone("")
       } else {
         toast({
           title: "Error",
@@ -115,7 +130,7 @@ export default function ProductDetail({ product, user }: ProductDetailProps) {
     }
   }
 
-  // Check whether the signed-in user already joined this product's waitlist
+  // C// Check whether the signed-in user already joined this product's waitlist
   useEffect(() => {
     const token = localStorage.getItem("token")
     if (!token) return
@@ -149,6 +164,29 @@ export default function ProductDetail({ product, user }: ProductDetailProps) {
       }
     })()
   }, [product._id, currentVariant])
+
+  useEffect(() => {
+    ;(async () => {
+      try {
+        const token = localStorage.getItem('token')
+        if (!token) {
+          // No token, skip settings fetch silently
+          return
+        }
+        const resp = await fetch('/api/admin/settings', { headers: { Authorization: `Bearer ${token}` } })
+        if (resp.status === 401 || resp.status === 403) {
+          // User is not admin, skip settings fetch silently
+          return
+        }
+        if (!resp.ok) return
+        const data = await resp.json()
+        setSettings(data)
+      } catch (e) {
+        // Silently handle errors for non-admin users
+        console.log('Settings not available for this user')
+      }
+    })()
+  }, [])
 
   const handleAddToCart = async () => {
     if (variants.length === 0) {
@@ -231,6 +269,13 @@ export default function ProductDetail({ product, user }: ProductDetailProps) {
             Echo Phase
           </Badge>
         )
+      case "press":
+        return (
+          <Badge variant="outline" className="border-purple-200 text-purple-800">
+            <Star className="w-3 h-3 mr-1" />
+            Press Edition
+          </Badge>
+        )
     }
   }
 
@@ -260,7 +305,7 @@ export default function ProductDetail({ product, user }: ProductDetailProps) {
             <CardContent className="p-6 space-y-4">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Users className="w-4 h-4" />
-                Join the waitlist to be notified when available
+                Lock in your piece before the world sees it
               </div>
 
               <div className="bg-muted/50 p-4 rounded-lg">
@@ -272,11 +317,13 @@ export default function ProductDetail({ product, user }: ProductDetailProps) {
                   </Badge>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-lg font-bold text-primary">{formatPrice(product.basePrice * 0.8)}</span>
-                  <span className="text-sm text-muted-foreground line-through">{formatPrice(product.basePrice)}</span>
+                  <span className="text-lg font-bold text-primary">{formatPrice(pricingResult.finalPrice)}</span>
+                  {pricingResult.discount > 0 && (
+                    <span className="text-sm text-muted-foreground line-through">{formatPrice(pricingResult.basePrice)}</span>
+                  )}
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Estimated 20% early bird discount when originals phase launches
+                  {pricingResult.discount > 0 ? `${pricingResult.discount}% discount - ` : ''}Secure your piece with full payment. Limited to 100 pieces worldwide.
                 </p>
               </div>
 
@@ -298,11 +345,13 @@ export default function ProductDetail({ product, user }: ProductDetailProps) {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
+                <Label htmlFor="phone">WhatsApp Number</Label>
+                <Input id="phone" placeholder="+15551234567" value={phone} onChange={(e) => setPhone(e.target.value)} />
               </div>
 
-              <Button onClick={handleWaitlistJoin} disabled={isLoading} className="w-full">
-                <Mail className="w-4 h-4 mr-2" />
-                {isLoading ? "Joining..." : "Join Waitlist"}
+              <Button onClick={handleAddToCart} disabled={isLoading} className="w-full">
+                <ShoppingCart className="w-4 h-4 mr-2" />
+                {isLoading ? "Processing..." : `Secure Your Piece - ${formatPrice(pricingResult.finalPrice)}`}
               </Button>
             </CardContent>
           </Card>
@@ -396,9 +445,47 @@ export default function ProductDetail({ product, user }: ProductDetailProps) {
                 <p className="text-xs text-muted-foreground">Escrow protected - pay only when item is sourced</p>
               </div>
 
-              <Button variant="outline" className="w-full bg-transparent">
-                Request This Item - {formatPrice(pricingResult.finalPrice)}
-              </Button>
+              <div className="space-y-2">
+                {!echoRequested ? (
+                  <Button variant="outline" className="w-full bg-transparent" onClick={async () => {
+                    setIsLoading(true)
+                    try {
+                      const token = localStorage.getItem('token')
+                      const resp = await fetch('/api/echo/request', { method: 'POST', headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) }, body: JSON.stringify({ productId: product._id, variantId: currentVariant.color ? `${currentVariant.color}-${currentVariant.material}` : undefined, email: email || undefined, phone: phone || undefined }) })
+                      const d = await resp.json()
+                      if (resp.ok) {
+                        setEchoRequested(true)
+                        toast({ title: 'Request submitted', description: 'We will try to source this variant for you.' })
+                      } else {
+                        toast({ title: 'Error', description: d.error || 'Failed to request echo', variant: 'destructive' })
+                      }
+                    } catch (e) {
+                      toast({ title: 'Error', description: 'Failed to request echo', variant: 'destructive' })
+                    } finally { setIsLoading(false) }
+                  }}>
+                    Request This Item - {formatPrice(pricingResult.finalPrice)}
+                  </Button>
+                ) : (
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h4 className="font-semibold">Echo request submitted</h4>
+                          <p className="text-sm text-muted-foreground">We'll notify you when this variant is sourced.</p>
+                        </div>
+                        {settings?.whatsappNumber && (
+                          <Button onClick={() => {
+                            const phoneSafe = settings.whatsappNumber.replace(/[^0-9+]/g, '')
+                            const text = encodeURIComponent(`Hi, I requested an echo for product ${product.name} (SKU ${product.sku}). Please assist.`)
+                            const url = `https://wa.me/${phoneSafe}?text=${text}`
+                            window.open(url, '_blank')
+                          }}>Contact via WhatsApp</Button>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
             </CardContent>
           </Card>
         )

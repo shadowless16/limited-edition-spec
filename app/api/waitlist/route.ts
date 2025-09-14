@@ -9,8 +9,8 @@ export async function POST(request: NextRequest) {
   try {
     await connectToDatabase()
 
-    const token = request.headers.get("authorization")?.replace("Bearer ", "")
-    const { email: bodyEmail, productId, variantId } = await request.json()
+  const token = request.headers.get("authorization")?.replace("Bearer ", "")
+  const { email: bodyEmail, phone: bodyPhone, productId, variantId } = await request.json()
 
     if (!productId) {
       return NextResponse.json({ error: "Product ID is required" }, { status: 400 })
@@ -42,6 +42,16 @@ export async function POST(request: NextRequest) {
       if (!email) {
         return NextResponse.json({ error: "Email is required for guest waitlist joins" }, { status: 400 })
       }
+      if (!bodyPhone) {
+        return NextResponse.json({ error: "WhatsApp number is required for guest waitlist joins" }, { status: 400 })
+      }
+
+      // Basic E.164 phone validation: + followed by 8-15 digits
+      const phoneNormalized = String(bodyPhone).replace(/\s+/g, "")
+      const e164 = /^\+[1-9]\d{7,14}$/
+      if (!e164.test(phoneNormalized)) {
+        return NextResponse.json({ error: "Invalid WhatsApp number. Use E.164 format, e.g. +15551234567" }, { status: 400 })
+      }
 
       // Create a lightweight placeholder user (upsert) so we can reference a User._id
       const placeholderPassword = Math.random().toString(36).slice(2, 10)
@@ -50,6 +60,7 @@ export async function POST(request: NextRequest) {
         {
           $setOnInsert: {
             email,
+            phone: phoneNormalized,
             firstName: "",
             lastName: "",
             password: placeholderPassword,

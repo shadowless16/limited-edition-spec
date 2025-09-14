@@ -137,7 +137,7 @@ export default function OrderManagement() {
     <div className="space-y-6">
       <div className="grid gap-4">
         {orders.map((order) => (
-          <Card key={order._id} className="cursor-pointer hover:shadow-md transition-shadow">
+          <Card key={order._id} className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => setSelectedOrder(order)}>
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
@@ -154,31 +154,75 @@ export default function OrderManagement() {
                   <p className="text-sm">
                     {order.items.length} item(s) • ${(order.total / 100).toFixed(2)}
                   </p>
+                  <p className="text-xs text-muted-foreground">
+                    {new Date(order.createdAt).toLocaleDateString()}
+                  </p>
                 </div>
-                <Button variant="outline" size="sm" onClick={() => setSelectedOrder(order)}>
-                  Manage
-                </Button>
+                <div className="text-right">
+                  <p className="text-sm font-medium">${(order.total / 100).toFixed(2)}</p>
+                  <p className="text-xs text-muted-foreground">Click for details</p>
+                </div>
               </div>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      {/* Fulfillment Modal */}
+      {/* Order Details Modal */}
       {selectedOrder && (
-        <Card className="fixed inset-4 z-50 bg-background border shadow-lg overflow-auto">
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              Order {selectedOrder.orderNumber}
-              <Button variant="ghost" onClick={() => setSelectedOrder(null)}>
-                ×
-              </Button>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <FulfillmentForm order={selectedOrder} onUpdate={updateFulfillment} isUpdating={isUpdating} />
-          </CardContent>
-        </Card>
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+          <Card className="w-full max-w-4xl max-h-[90vh] overflow-auto">
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                Order {selectedOrder.orderNumber}
+                <Button variant="ghost" onClick={() => setSelectedOrder(null)}>
+                  ×
+                </Button>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Order Summary */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <h3 className="font-semibold mb-2">Customer Details</h3>
+                  <p>{selectedOrder.userId.firstName} {selectedOrder.userId.lastName}</p>
+                  <p className="text-sm text-muted-foreground">{selectedOrder.userId.email}</p>
+                </div>
+                <div>
+                  <h3 className="font-semibold mb-2">Order Info</h3>
+                  <p>Status: <Badge>{selectedOrder.status}</Badge></p>
+                  <p>Total: ${(selectedOrder.total / 100).toFixed(2)}</p>
+                  <p className="text-sm text-muted-foreground">Created: {new Date(selectedOrder.createdAt).toLocaleDateString()}</p>
+                </div>
+              </div>
+              
+              {/* Order Items */}
+              <div>
+                <h3 className="font-semibold mb-2">Items</h3>
+                <div className="space-y-2">
+                  {selectedOrder.items.map((item, index) => (
+                    <div key={index} className="flex justify-between items-center p-2 border rounded">
+                      <div>
+                        <p className="font-medium">{item.productId.name}</p>
+                        <p className="text-sm text-muted-foreground">SKU: {item.productId.sku}</p>
+                      </div>
+                      <div className="text-right">
+                        <p>Qty: {item.quantity}</p>
+                        <p>${(item.unitPrice / 100).toFixed(2)} each</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              
+              {/* Fulfillment Form */}
+              <div>
+                <h3 className="font-semibold mb-2">Fulfillment</h3>
+                <FulfillmentForm order={selectedOrder} onUpdate={updateFulfillment} isUpdating={isUpdating} />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       )}
     </div>
   )

@@ -6,18 +6,35 @@ export async function GET(request: NextRequest) {
   try {
     await connectToDatabase()
 
-    // Populate both product name and the user's email for admin display
-    const waitlistEntries = await WaitlistEntry.find()
-      .populate("productId", "name")
-      .populate("userId", "email")
-      .sort({ createdAt: -1 })
-      .limit(100)
+    // support simple filtering/sorting via query params
+    const { searchParams } = new URL(request.url)
+    const filter: any = {}
+    if (searchParams.get('productId')) filter.productId = searchParams.get('productId')
+    if (searchParams.get('status')) filter.status = searchParams.get('status')
+
+    const sortField = searchParams.get('sort') || 'createdAt'
+    const sortOrder = searchParams.get('order') === 'asc' ? 1 : -1
+    const limit = Number(searchParams.get('limit') || '100')
+
+    // Populate product name, sku and current phase/status and user's email & phone for admin display
+    const waitlistEntries = await WaitlistEntry.find(filter)
+      .populate("productId", "name sku status currentPhase")
+      .populate("userId", "email phone")
+      .sort({ [sortField]: sortOrder })
+      .limit(Math.min(limit, 1000))
 
     // Transform to include email at top-level for ease of rendering in admin UI
     const transformed = waitlistEntries.map((entry) => ({
       _id: entry._id,
-      productId: entry.productId,
-      email: (entry as any).userId?.email || null,
+      product: entry.productId ? {
+        id: (entry.productId as any)._id,
+        name: (entry.productId as any).name,
+        sku: (entry.productId as any).sku,
+        status: (entry.productId as any).status,
+        currentPhase: (entry.productId as any).currentPhase,
+      } : null,
+  email: (entry as any).userId?.email || null,
+  phone: (entry as any).userId?.phone || null,
       position: entry.position,
       status: entry.status,
       createdAt: entry.createdAt,

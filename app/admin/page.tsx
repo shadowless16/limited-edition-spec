@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import Header from "@/components/layout/Header"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input as UIInput } from "@/components/ui/input"
@@ -11,7 +12,8 @@ import OrderManagement from "@/components/OrderManagement"
 import { formatPrice } from "@/lib/pricing"
 import CreateProductModal from "@/components/admin/CreateProductModal"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog"
-import { X } from "lucide-react"
+import BankTransferForm from "@/components/payment/BankTransferForm"
+import CryptoPaymentForm from "@/components/payment/CryptoPaymentForm"
 
 interface Product {
   _id: string
@@ -28,7 +30,7 @@ interface Product {
   totalSold: number
   basePrice: number
   images: string[]
-  sku: string // Add the 'sku' property
+  sku: string
   paymentOptions?: string[]
 }
 
@@ -44,9 +46,9 @@ interface WaitlistEntry {
 export default function AdminDashboard() {
   const [products, setProducts] = useState<Product[]>([])
   const [waitlistEntries, setWaitlistEntries] = useState<WaitlistEntry[]>([])
+  const [editProduct, setEditProduct] = useState<Product | null>(null)
+  const [modalOpen, setModalOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
-
-  // Client-side guard: ensure current user is admin, otherwise redirect to homepage
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null)
 
   useEffect(() => {
@@ -77,13 +79,21 @@ export default function AdminDashboard() {
 
   const fetchData = async () => {
     try {
-      const [productsRes, waitlistRes] = await Promise.all([fetch("/api/admin/products"), fetch("/api/admin/waitlist")])
+      const token = localStorage.getItem("token")
+      if (!token) {
+        setIsLoading(false)
+        return
+      }
+      const [productsRes, waitlistRes] = await Promise.all([
+        fetch("/api/admin/products", { headers: { Authorization: `Bearer ${token}` } }),
+        fetch("/api/admin/waitlist", { headers: { Authorization: `Bearer ${token}` } }),
+      ])
 
       if (productsRes.ok) {
         const productsData = await productsRes.json()
         setProducts(productsData.map((product: any) => ({
           ...product,
-          sku: product.sku || "", // Ensure 'sku' is included
+          sku: product.sku || "",
         })))
       }
 
@@ -100,14 +110,15 @@ export default function AdminDashboard() {
 
   const updateProductPhase = async (productId: string, newPhase: string) => {
     try {
+      const token = localStorage.getItem("token")
       const response = await fetch(`/api/admin/products/${productId}/phase`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
         body: JSON.stringify({ phase: newPhase }),
       })
 
       if (response.ok) {
-        fetchData() // Refresh data
+        fetchData()
       }
     } catch (error) {
       console.error("Error updating product phase:", error)
@@ -115,14 +126,15 @@ export default function AdminDashboard() {
   }
 
   const deleteProduct = async (productId: string) => {
-    // kept for backward compatibility; callers now use ConfirmDelete below
     try {
+      const token = localStorage.getItem("token")
       const response = await fetch(`/api/admin/products/${productId}`, {
         method: "DELETE",
+        headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
       })
 
       if (response.ok) {
-        fetchData() // Refresh data
+        fetchData()
       }
     } catch (error) {
       console.error("Error deleting product:", error)
@@ -144,8 +156,9 @@ export default function AdminDashboard() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background p-4">
-        <div className="max-w-7xl mx-auto">
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="max-w-7xl mx-auto p-4">
           <div className="animate-pulse space-y-4">
             <div className="h-8 bg-muted rounded w-1/4"></div>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -164,17 +177,15 @@ export default function AdminDashboard() {
   const totalSales = products.reduce((sum, p) => sum + p.totalSold, 0)
   const activeProducts = products.filter((p) => p.status === "active").length
 
-  
-
   return (
-    <div className="min-h-screen bg-background p-4">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="min-h-screen bg-background">
+      <Header />
+      <div className="max-w-7xl mx-auto space-y-6 p-4">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold">Admin Dashboard</h1>
           <CreateProductModal onProductCreated={fetchData} />
         </div>
 
-        {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -223,7 +234,6 @@ export default function AdminDashboard() {
           </Card>
         </div>
 
-        {/* Main Content */}
         <Tabs defaultValue="products" className="space-y-4">
           <TabsList>
             <TabsTrigger value="products">Products</TabsTrigger>
@@ -262,7 +272,9 @@ export default function AdminDashboard() {
                           )}
                           <div>
                             <CardTitle className="text-lg">{product.name}</CardTitle>
-                            <p className="text-sm text-muted-foreground">{formatPrice(product.basePrice)}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {formatPrice(product.basePrice)}
+                            </p>
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
@@ -292,20 +304,6 @@ export default function AdminDashboard() {
                           <p className="text-2xl font-bold">
                             {product.variants?.reduce((sum, v) => sum + v.stock, 0) || 0}
                           </p>
-                        </div>
-                      </div>
-
-                      {/* Payment options visibility: show badges so admins can see configured methods */}
-                      <div className="mb-4">
-                        <p className="text-sm text-muted-foreground">Payment Options</p>
-                        <div className="flex items-center gap-2 mt-2">
-                          {product.paymentOptions && product.paymentOptions.length > 0 ? (
-                            product.paymentOptions.map((opt: string) => (
-                              <Badge key={opt} className="capitalize">{opt.replace("_", " ")}</Badge>
-                            ))
-                          ) : (
-                            <p className="text-sm text-muted-foreground">None configured</p>
-                          )}
                         </div>
                       </div>
 
@@ -376,16 +374,35 @@ export default function AdminDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {waitlistEntries.slice(0, 10).map((entry) => (
-                    <div key={entry._id} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div>
-                        <p className="font-medium">{entry.email}</p>
-                        <p className="text-sm text-muted-foreground">
-                          Position #{entry.position} • {new Date(entry.createdAt).toLocaleDateString()}
-                        </p>
-                      </div>
-                      <Badge variant={entry.status === "active" ? "default" : "secondary"}>{entry.status}</Badge>
-                    </div>
+                  {waitlistEntries.slice(0, 50).map((entry) => (
+                    <Dialog key={entry._id}>
+                      <DialogTrigger asChild>
+                        <div className="flex items-center justify-between p-4 border rounded-lg cursor-pointer hover:bg-muted/50">
+                          <div className="flex-1">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <p className="font-medium">{entry.email}</p>
+                                <p className="text-sm text-muted-foreground">Position #{entry.position} • {new Date(entry.createdAt).toLocaleDateString()}</p>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="ml-4">
+                            <Badge variant={entry.status === "active" ? "default" : "secondary"}>{entry.status}</Badge>
+                          </div>
+                        </div>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Waitlist Entry Details</DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-4">
+                          <div><strong>Email:</strong> {entry.email}</div>
+                          <div><strong>Position:</strong> #{entry.position}</div>
+                          <div><strong>Status:</strong> {entry.status}</div>
+                          <div><strong>Joined:</strong> {new Date(entry.createdAt).toLocaleDateString()}</div>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
                   ))}
                 </div>
               </CardContent>
@@ -408,15 +425,9 @@ export default function AdminDashboard() {
           </TabsContent>
 
           <TabsContent value="payment-methods" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Payment Methods</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <PaymentMethodsManager />
-              </CardContent>
-            </Card>
+            <PaymentMethodsManager />
           </TabsContent>
+
           <TabsContent value="settings" className="space-y-4">
             <Card>
               <CardHeader>
@@ -427,7 +438,6 @@ export default function AdminDashboard() {
               </CardContent>
             </Card>
           </TabsContent>
-          {/* Payment mapping removed — payment methods are global-only */}
         </Tabs>
       </div>
     </div>
@@ -437,6 +447,8 @@ export default function AdminDashboard() {
 function UserManagement() {
   const [users, setUsers] = useState<Array<{ id: string; email: string; name?: string; isAdmin: boolean }>>([])
   const [loading, setLoading] = useState(true)
+  const [searchTerm, setSearchTerm] = useState("")
+  const [showAll, setShowAll] = useState(false)
 
   useEffect(() => {
     fetchUsers()
@@ -473,20 +485,39 @@ function UserManagement() {
 
   if (loading) return <div>Loading users...</div>
 
+  const filteredUsers = users.filter(u => 
+    u.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (u.name && u.name.toLowerCase().includes(searchTerm.toLowerCase()))
+  )
+  const displayUsers = showAll ? filteredUsers : filteredUsers.slice(0, 8)
+
   return (
-    <div className="space-y-2">
-      {users.map((u) => (
-        <div key={u.id} className="flex items-center justify-between p-3 border rounded">
-          <div>
-            <div className="font-medium">{u.name || u.email}</div>
-            <div className="text-sm text-muted-foreground">{u.email}</div>
+    <div className="space-y-4">
+      <div className="flex gap-2">
+        <UIInput 
+          placeholder="Search users..." 
+          value={searchTerm} 
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="flex-1"
+        />
+        {!showAll && filteredUsers.length > 8 && (
+          <Button variant="outline" onClick={() => setShowAll(true)}>Show All ({filteredUsers.length})</Button>
+        )}
+      </div>
+      <div className="space-y-2">
+        {displayUsers.map((u) => (
+          <div key={u.id} className="flex items-center justify-between p-3 border rounded">
+            <div>
+              <div className="font-medium">{u.name || u.email}</div>
+              <div className="text-sm text-muted-foreground">{u.email}</div>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="text-sm">{u.isAdmin ? "Admin" : "User"}</div>
+              <Button size="sm" onClick={() => toggleAdmin(u.id, !u.isAdmin)}>{u.isAdmin ? "Revoke Admin" : "Make Admin"}</Button>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="text-sm">{u.isAdmin ? "Admin" : "User"}</div>
-            <Button size="sm" onClick={() => toggleAdmin(u.id, !u.isAdmin)}>{u.isAdmin ? "Revoke Admin" : "Make Admin"}</Button>
-          </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   )
 }
@@ -494,24 +525,10 @@ function UserManagement() {
 function PaymentMethodsManager() {
   const [methods, setMethods] = useState<Array<any>>([])
   const [loading, setLoading] = useState(true)
-  const [form, setForm] = useState({
-    key: "",
-    methodType: "bank", // bank | crypto | other
-    name: "",
-    enabled: true,
-    // bank fields
-    bankName: "",
-    accountNumber: "",
-    accountName: "",
-    routingNumber: "",
-    // crypto fields
-    cryptoAddress: "",
-    cryptoNetwork: "",
-    cryptoNotes: "",
-    // generic fallback
-    genericDetails: "",
-  })
-  const [editingId, setEditingId] = useState<string | null>(null)
+  const [showAddForm, setShowAddForm] = useState(false)
+  const [editingMethod, setEditingMethod] = useState<any>(null)
+  const [editingType, setEditingType] = useState<'bank_transfer' | 'crypto' | null>(null)
+  const [newMethod, setNewMethod] = useState({ key: '', name: '', enabled: true, details: '{}' })
 
   useEffect(() => {
     fetchMethods()
@@ -532,46 +549,62 @@ function PaymentMethodsManager() {
     }
   }
 
-  const create = async () => {
+  const addMethod = async () => {
     try {
       const token = localStorage.getItem("token")
-      const details: any = {}
-      if (form.methodType === 'bank') {
-        if (form.bankName) details.bankName = form.bankName
-        if (form.accountNumber) details.accountNumber = form.accountNumber
-        if (form.accountName) details.accountName = form.accountName
-        if (form.routingNumber) details.routingNumber = form.routingNumber
-      } else if (form.methodType === 'crypto') {
-        if (form.cryptoAddress) details.cryptoAddress = form.cryptoAddress
-        if (form.cryptoNetwork) details.cryptoNetwork = form.cryptoNetwork
-        if (form.cryptoNotes) details.cryptoNotes = form.cryptoNotes
-      } else if (form.methodType === 'other' && form.genericDetails) {
-        try {
-          const parsed = JSON.parse(form.genericDetails)
-          Object.assign(details, parsed)
-        } catch (e) {
-          details.note = form.genericDetails
-        }
+      const resp = await fetch("/api/admin/payment-methods", {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}` 
+        },
+        body: JSON.stringify(newMethod)
+      })
+      if (resp.ok) {
+        fetchMethods()
+        setShowAddForm(false)
+        setNewMethod({ key: '', name: '', enabled: true, details: '{}' })
       }
+    } catch (e) {
+      console.error(e)
+    }
+  }
 
-      const keyToUse = form.key || (form.methodType === 'bank' ? 'bank_transfer' : form.methodType === 'crypto' ? 'crypto' : '')
-
-      const payload: any = {
-        key: keyToUse,
-        name: form.name,
-        enabled: form.enabled,
+  const updateMethod = async () => {
+    if (!editingMethod) return
+    try {
+      const token = localStorage.getItem("token")
+      const resp = await fetch(`/api/admin/payment-methods/${editingMethod._id}`, {
+        method: 'PATCH',
+        headers: { 
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}` 
+        },
+        body: JSON.stringify({
+          key: editingMethod.key,
+          name: editingMethod.name,
+          enabled: editingMethod.enabled,
+          details: typeof editingMethod.details === 'string' ? JSON.parse(editingMethod.details) : editingMethod.details
+        })
+      })
+      if (resp.ok) {
+        fetchMethods()
+        setEditingMethod(null)
       }
-      if (Object.keys(details).length) payload.details = details
+    } catch (e) {
+      console.error(e)
+    }
+  }
 
-      let resp
-      if (editingId) {
-        resp = await fetch(`/api/admin/payment-methods/${editingId}`, { method: "PATCH", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify(payload) })
-        setEditingId(null)
-      } else {
-        resp = await fetch("/api/admin/payment-methods", { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify(payload) })
-      }
-    if (resp.ok) {
-  setForm({ key: "", methodType: 'bank', name: "", enabled: true, bankName: "", accountNumber: "", accountName: "", routingNumber: "", cryptoAddress: "", cryptoNetwork: "", cryptoNotes: "", genericDetails: "" })
+  const deleteMethod = async (methodId: string) => {
+    if (!confirm('Are you sure you want to delete this payment method?')) return
+    try {
+      const token = localStorage.getItem("token")
+      const resp = await fetch(`/api/admin/payment-methods/${methodId}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      if (resp.ok) {
         fetchMethods()
       }
     } catch (e) {
@@ -579,114 +612,240 @@ function PaymentMethodsManager() {
     }
   }
 
-  const remove = async (id: string) => {
+  const toggleEnabled = async (methodId: string, enabled: boolean) => {
     try {
       const token = localStorage.getItem("token")
-      const resp = await fetch(`/api/admin/payment-methods/${id}`, { method: "DELETE", headers: { Authorization: `Bearer ${token}` } })
-      if (resp.ok) fetchMethods()
+      const resp = await fetch(`/api/admin/payment-methods/${methodId}`, {
+        method: 'PATCH',
+        headers: { 
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}` 
+        },
+        body: JSON.stringify({ enabled })
+      })
+      if (resp.ok) {
+        fetchMethods()
+      }
     } catch (e) {
       console.error(e)
     }
+  }
+
+  const startEdit = (method: any) => {
+    setEditingMethod(method)
+    setEditingType(method.key === 'bank_transfer' ? 'bank_transfer' : method.key === 'crypto' ? 'crypto' : null)
+  }
+
+  const handleBankTransferSave = async (details: any) => {
+    if (!editingMethod) return
+    try {
+      const token = localStorage.getItem("token")
+      const resp = await fetch(`/api/admin/payment-methods/${editingMethod._id}`, {
+        method: 'PATCH',
+        headers: { 
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}` 
+        },
+        body: JSON.stringify({
+          key: editingMethod.key,
+          name: editingMethod.name,
+          enabled: editingMethod.enabled,
+          details
+        })
+      })
+      if (resp.ok) {
+        fetchMethods()
+        setEditingMethod(null)
+        setEditingType(null)
+      }
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
+  const handleCryptoSave = async (details: any) => {
+    if (!editingMethod) return
+    try {
+      const token = localStorage.getItem("token")
+      const resp = await fetch(`/api/admin/payment-methods/${editingMethod._id}`, {
+        method: 'PATCH',
+        headers: { 
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}` 
+        },
+        body: JSON.stringify({
+          key: editingMethod.key,
+          name: editingMethod.name,
+          enabled: editingMethod.enabled,
+          details
+        })
+      })
+      if (resp.ok) {
+        fetchMethods()
+        setEditingMethod(null)
+        setEditingType(null)
+      }
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
+  const cancelEdit = () => {
+    setEditingMethod(null)
+    setEditingType(null)
   }
 
   if (loading) return <div>Loading payment methods...</div>
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
-        <div>
-          <label className="block text-sm font-medium mb-1">Type</label>
-          <select className="w-full p-2 rounded border" value={form.methodType} onChange={(e) => {
-            const t = e.target.value
-            // when switching type, suggest a default key
-            const suggestedKey = t === 'bank' ? 'bank_transfer' : t === 'crypto' ? 'crypto' : ''
-            setForm({ ...form, methodType: t, key: suggestedKey })
-          }}>
-            <option value="bank">Bank Transfer</option>
-            <option value="crypto">Crypto / Wallet</option>
-            <option value="other">Other</option>
-          </select>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-1">Key</label>
-          <UIInput placeholder="key (e.g. bank_transfer)" value={form.key} onChange={(e) => setForm({ ...form, key: e.target.value })} />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-1">Display name</label>
-          <UIInput placeholder="Display name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-        </div>
-        <div className="flex items-center gap-2">
-          <Button onClick={create}>{editingId ? 'Save' : 'Create'}</Button>
-          {editingId && (
-            <Button variant="outline" onClick={() => { setEditingId(null); setForm({ key: '', methodType: 'bank', name: '', enabled: true, bankName: '', accountNumber: '', accountName: '', routingNumber: '', cryptoAddress: '', cryptoNetwork: '', cryptoNotes: '', genericDetails: '' }) }}>Cancel</Button>
-          )}
-        </div>
+      <div className="flex justify-between items-center">
+        <h3 className="text-lg font-medium">Payment Methods</h3>
+        <Button onClick={() => setShowAddForm(!showAddForm)}>
+          {showAddForm ? 'Cancel' : 'Add Method'}
+        </Button>
       </div>
 
-      {/* Structured Details Form: show fields depending on selected type. */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-        {form.methodType === 'bank' && (
-          <div>
-            <p className="text-sm font-medium mb-2">Bank Transfer Details</p>
-            <UIInput placeholder="Bank name" value={form.bankName} onChange={(e) => setForm({ ...form, bankName: e.target.value })} className="mb-2" />
-            <UIInput placeholder="Account number" value={form.accountNumber} onChange={(e) => setForm({ ...form, accountNumber: e.target.value })} className="mb-2" />
-            <UIInput placeholder="Account name" value={form.accountName} onChange={(e) => setForm({ ...form, accountName: e.target.value })} className="mb-2" />
-            <UIInput placeholder="Routing / Sort code (optional)" value={form.routingNumber} onChange={(e) => setForm({ ...form, routingNumber: e.target.value })} />
-          </div>
-        )}
+      {showAddForm && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Add New Payment Method</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-sm block mb-1">Key</label>
+                <UIInput 
+                  value={newMethod.key} 
+                  onChange={(e) => setNewMethod({...newMethod, key: e.target.value})} 
+                  placeholder="bank_transfer" 
+                />
+              </div>
+              <div>
+                <label className="text-sm block mb-1">Name</label>
+                <UIInput 
+                  value={newMethod.name} 
+                  onChange={(e) => setNewMethod({...newMethod, name: e.target.value})} 
+                  placeholder="Bank Transfer" 
+                />
+              </div>
+            </div>
+            <div>
+              <label className="text-sm block mb-1">Details (JSON)</label>
+              <textarea 
+                className="w-full p-2 border rounded text-sm" 
+                rows={4}
+                value={newMethod.details} 
+                onChange={(e) => setNewMethod({...newMethod, details: e.target.value})} 
+                placeholder='{"account_number": "123456", "instructions": "Include order number"}'
+              />
+            </div>
+            <div className="flex gap-2">
+              <Button onClick={addMethod}>Add Payment Method</Button>
+              <Button variant="outline" onClick={() => setShowAddForm(false)}>Cancel</Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
-        {form.methodType === 'crypto' && (
-          <div>
-            <p className="text-sm font-medium mb-2">Crypto Details</p>
-            <UIInput placeholder="Wallet address" value={form.cryptoAddress} onChange={(e) => setForm({ ...form, cryptoAddress: e.target.value })} className="mb-2" />
-            <UIInput placeholder="Network (e.g. ethereum, bitcoin)" value={form.cryptoNetwork} onChange={(e) => setForm({ ...form, cryptoNetwork: e.target.value })} className="mb-2" />
-            <UIInput placeholder="Notes / memo (optional)" value={form.cryptoNotes} onChange={(e) => setForm({ ...form, cryptoNotes: e.target.value })} />
-          </div>
-        )}
+      {editingMethod && editingType === 'bank_transfer' && (
+        <BankTransferForm
+          details={{
+            bankName: editingMethod.details?.bankName || editingMethod.details?.bank_name || '',
+            accountNumber: editingMethod.details?.accountNumber || editingMethod.details?.account_number || '',
+            routingNumber: editingMethod.details?.routingNumber || editingMethod.details?.routing_number || '',
+            accountHolderName: editingMethod.details?.accountHolderName || editingMethod.details?.account_holder || '',
+            swiftCode: editingMethod.details?.swiftCode || editingMethod.details?.swift_code || '',
+            iban: editingMethod.details?.iban || '',
+            instructions: editingMethod.details?.instructions || ''
+          }}
+          onSave={handleBankTransferSave}
+          onCancel={cancelEdit}
+        />
+      )}
 
-        {form.methodType === 'other' && (
-          <div>
-            <p className="text-sm font-medium mb-2">Other / Fallback details</p>
-            <UIInput placeholder="Short description or instructions" value={form.genericDetails} onChange={(e) => setForm({ ...form, genericDetails: e.target.value })} />
-          </div>
-        )}
-      </div>
+      {editingMethod && editingType === 'crypto' && (
+        <CryptoPaymentForm
+          details={{
+            bitcoinAddress: editingMethod.details?.bitcoinAddress || editingMethod.details?.bitcoin_address || '',
+            ethereumAddress: editingMethod.details?.ethereumAddress || editingMethod.details?.ethereum_address || '',
+            usdcAddress: editingMethod.details?.usdcAddress || editingMethod.details?.usdc_address || '',
+            litecoinAddress: editingMethod.details?.litecoinAddress || editingMethod.details?.litecoin_address || '',
+            instructions: editingMethod.details?.instructions || ''
+          }}
+          onSave={handleCryptoSave}
+          onCancel={cancelEdit}
+        />
+      )}
+
+      {editingMethod && !editingType && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Edit Payment Method</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-center py-8">
+              <p className="text-muted-foreground mb-4">
+                This payment method type doesn't have a specialized form yet.
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Supported types: Bank Transfer, Cryptocurrency
+              </p>
+              <Button variant="outline" onClick={cancelEdit} className="mt-4">
+                Close
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="space-y-2">
-        {methods.length === 0 && <div>No payment methods configured</div>}
+        {methods.length === 0 && (
+          <div className="text-center py-8 text-muted-foreground">
+            No payment methods configured. Add your first payment method to get started.
+          </div>
+        )}
         {methods.map((m) => (
           <div key={m._id} className="flex items-center justify-between p-3 border rounded">
-            <div>
+            <div className="flex-1">
               <div className="font-medium">{m.name} <span className="text-xs text-muted-foreground">({m.key})</span></div>
+              <div className="text-sm text-muted-foreground mt-1">
+                {Object.keys(m.details || {}).length} configuration items
+              </div>
+              {m.details && Object.keys(m.details).length > 0 && (
+                <div className="text-xs text-muted-foreground mt-1 max-w-md truncate">
+                  {Object.entries(m.details).slice(0, 2).map(([key, value]) => `${key}: ${value}`).join(', ')}
+                  {Object.keys(m.details).length > 2 && '...'}
+                </div>
+              )}
             </div>
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" onClick={() => {
-                // prefill form for edit
-                const d = m.details || {}
-                // detect type
-                let detectedType = 'other'
-                if (d.bankName || d.accountNumber || d.account_number || d.account_name) detectedType = 'bank'
-                else if (d.cryptoAddress || d.address || d.cryptoNetwork || d.network) detectedType = 'crypto'
-
-                setForm({
-                  key: m.key,
-                  methodType: detectedType,
-                  name: m.name,
-                  enabled: !!m.enabled,
-                  bankName: d.bankName || d.bank || "",
-                  accountNumber: d.accountNumber || d.account_number || "",
-                  accountName: d.accountName || d.account_name || "",
-                  routingNumber: d.routingNumber || d.routing_number || "",
-                  cryptoAddress: d.cryptoAddress || d.address || "",
-                  cryptoNetwork: d.cryptoNetwork || d.network || "",
-                  cryptoNotes: d.cryptoNotes || d.notes || "",
-                  genericDetails: detectedType === 'other' && typeof d === 'object' && Object.keys(d).length ? JSON.stringify(d) : "",
-                })
-                setEditingId(m._id)
-              }}>Edit</Button>
-              <Button variant="outline" size="sm" onClick={() => remove(m._id)}>Delete</Button>
+              <Badge variant={m.enabled ? "default" : "secondary"}>
+                {m.enabled ? "Enabled" : "Disabled"}
+              </Badge>
+              <Button 
+                size="sm" 
+                variant="outline"
+                onClick={() => startEdit(m)}
+              >
+                <Edit className="h-4 w-4 mr-1" />
+                Edit
+              </Button>
+              <Button 
+                size="sm" 
+                variant="outline"
+                onClick={() => toggleEnabled(m._id, !m.enabled)}
+              >
+                {m.enabled ? "Disable" : "Enable"}
+              </Button>
+              <Button 
+                size="sm" 
+                variant="outline"
+                className="text-destructive hover:text-destructive"
+                onClick={() => deleteMethod(m._id)}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
             </div>
           </div>
         ))}
@@ -699,18 +858,35 @@ function SettingsPanel() {
   const [whatsappNumber, setWhatsappNumber] = useState<string>('')
   const [brandColor, setBrandColor] = useState<string>('#6b3d2e')
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string>('')
 
   useEffect(() => {
     ;(async () => {
       try {
         const token = localStorage.getItem('token')
+        if (!token) {
+          setError('No authentication token found')
+          setLoading(false)
+          return
+        }
         const resp = await fetch('/api/admin/settings', { headers: { Authorization: `Bearer ${token}` } })
-        if (!resp.ok) return
+        if (resp.status === 401 || resp.status === 403) {
+          setError('Admin access required')
+          setLoading(false)
+          return
+        }
+        if (!resp.ok) {
+          setError(`Failed to load settings: ${resp.status}`)
+          setLoading(false)
+          return
+        }
         const data = await resp.json()
         if (data.whatsappNumber) setWhatsappNumber(data.whatsappNumber)
         if (data.brandColor) setBrandColor(data.brandColor)
+        setError('')
       } catch (e) {
         console.error(e)
+        setError('Network error loading settings')
       } finally {
         setLoading(false)
       }
@@ -720,31 +896,40 @@ function SettingsPanel() {
   const save = async () => {
     try {
       const token = localStorage.getItem('token')
+      if (!token) {
+        setError('No authentication token found')
+        return
+      }
       const resp = await fetch('/api/admin/settings', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ whatsappNumber, brandColor }),
       })
-      if (!resp.ok) throw new Error('Failed to save')
-      alert('Settings saved')
+      if (!resp.ok) {
+        const errorData = await resp.json().catch(() => ({}))
+        throw new Error(errorData.error || `HTTP ${resp.status}`)
+      }
+      setError('')
+      alert('Settings saved successfully')
     } catch (e) {
       console.error(e)
-      alert('Failed to save settings')
+      setError(`Failed to save: ${e instanceof Error ? e.message : 'Unknown error'}`)
     }
   }
 
   if (loading) return <div>Loading settings...</div>
+  if (error) return <div className="text-red-600">Error: {error}</div>
 
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="text-sm">WhatsApp Number (E.164)</label>
-          <UIInput value={whatsappNumber} onChange={(e) => setWhatsappNumber((e.target as HTMLInputElement).value)} placeholder="+15551234567" />
+          <label className="text-sm block mb-1">WhatsApp Number (E.164)</label>
+          <UIInput value={whatsappNumber} onChange={(e) => setWhatsappNumber(e.target.value)} placeholder="+15551234567" />
         </div>
         <div>
-          <label className="text-sm">Brand Color (hex)</label>
-          <UIInput value={brandColor} onChange={(e) => setBrandColor((e.target as HTMLInputElement).value)} placeholder="#6b3d2e" />
+          <label className="text-sm block mb-1">Brand Color (hex)</label>
+          <UIInput value={brandColor} onChange={(e) => setBrandColor(e.target.value)} placeholder="#6b3d2e" />
         </div>
       </div>
       <div className="flex justify-end">
@@ -753,66 +938,3 @@ function SettingsPanel() {
     </div>
   )
 }
-
-function PaymentMethodMapper() {
-  const [products, setProducts] = useState<any[]>([])
-  const [methods, setMethods] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    ;(async () => {
-      try {
-        const token = localStorage.getItem('token')
-        const [pRes, mRes] = await Promise.all([
-          fetch('/api/admin/products', { headers: { Authorization: `Bearer ${token}` } }),
-          fetch('/api/admin/payment-methods', { headers: { Authorization: `Bearer ${token}` } }),
-        ])
-        if (pRes.ok) setProducts(await pRes.json())
-        if (mRes.ok) setMethods(await mRes.json())
-      } catch (e) {
-        console.error(e)
-      } finally {
-        setLoading(false)
-      }
-    })()
-  }, [])
-
-  const saveMapping = async (productId: string, selected: string[]) => {
-    try {
-      const token = localStorage.getItem('token')
-      const resp = await fetch(`/api/admin/products/${productId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ paymentOptions: selected }) })
-      if (resp.ok) {
-        setProducts((p) => p.map(pr => pr._id === productId ? { ...pr, paymentOptions: selected } : pr))
-      }
-    } catch (e) {
-      console.error(e)
-    }
-  }
-
-  if (loading) return <div>Loading mappings...</div>
-
-  return (
-    <div className="space-y-4">
-      {products.map((p) => (
-        <div key={p._id} className="p-3 border rounded grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
-          <div className="font-medium">{p.name}</div>
-          <div>
-            <select multiple value={p.paymentOptions || []} onChange={(e) => {
-              const opts = Array.from(e.target.selectedOptions).map(o => o.value)
-              // local optimistic update
-              setProducts((ps) => ps.map(x => x._id === p._id ? { ...x, paymentOptions: opts } : x))
-            }} className="w-full">
-              {methods.map((m) => (
-                <option key={m._id} value={m.key}>{m.name} ({m.key})</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <Button onClick={() => saveMapping(p._id, p.paymentOptions || [])}>Save</Button>
-          </div>
-        </div>
-      ))}
-    </div>
-  )
-}
-

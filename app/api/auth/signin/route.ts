@@ -27,7 +27,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate JWT token
-  const token = jwt.sign({ userId: user._id, email: user.email, isAdmin: user.isAdmin, role: user.role }, process.env.JWT_SECRET || "fallback-secret", {
+    const role = user.isAdmin ? "admin" : "user"
+    const token = jwt.sign({ userId: user._id, email: user.email, isAdmin: user.isAdmin, role }, process.env.JWT_SECRET || "fallback-secret", {
       expiresIn: "7d",
     })
 
@@ -39,7 +40,7 @@ export async function POST(request: NextRequest) {
       lastName: user.lastName,
       priorityClub: user.priorityClub,
       isAdmin: user.isAdmin,
-      role: (user as any).role || "user",
+      role,
     }
 
     return NextResponse.json({

@@ -1,9 +1,18 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { connectToDatabase } from "@/lib/mongodb"
 import { PaymentMethod } from "@/models/PaymentMethod"
+import { verifyToken } from "@/lib/auth"
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const token = request.headers.get('authorization')?.replace('Bearer ', '')
+    if (!token) return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
+    
+    const user = await verifyToken(token)
+    if (!user || (user as any).role !== 'admin') {
+      return NextResponse.json({ error: 'Admin access required' }, { status: 403 })
+    }
+
     await connectToDatabase()
     const methods = await PaymentMethod.find().sort({ createdAt: -1 }).lean()
     return NextResponse.json(methods)
@@ -15,6 +24,14 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
+    const token = request.headers.get('authorization')?.replace('Bearer ', '')
+    if (!token) return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
+    
+    const user = await verifyToken(token)
+    if (!user || (user as any).role !== 'admin') {
+      return NextResponse.json({ error: 'Admin access required' }, { status: 403 })
+    }
+
     await connectToDatabase()
     const data = await request.json()
     let detailsObj = data.details ?? {}

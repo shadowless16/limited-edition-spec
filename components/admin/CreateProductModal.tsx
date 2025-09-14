@@ -27,6 +27,7 @@ interface ProductForEdit {
   images: string[]
   releasePhases?: any
   paymentOptions?: string[]
+  discountPercent?: number
 }
 
 interface Variant {
@@ -41,10 +42,21 @@ interface CreateProductModalProps {
   product?: ProductForEdit
   onProductUpdated?: () => void
   children?: React.ReactNode
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
 }
 
-export default function CreateProductModal({ onProductCreated, product, onProductUpdated, children }: CreateProductModalProps) {
-  const [open, setOpen] = useState(false)
+export default function CreateProductModal({ onProductCreated, product, onProductUpdated, children, open: openProp, onOpenChange }: CreateProductModalProps) {
+  const [internalOpen, setInternalOpen] = useState(false)
+  const isControlled = typeof openProp !== 'undefined'
+  const open = isControlled ? !!openProp : internalOpen
+  const setOpen = (v: boolean) => {
+    if (isControlled) {
+      onOpenChange && onOpenChange(v)
+    } else {
+      setInternalOpen(v)
+    }
+  }
   const [isLoading, setIsLoading] = useState(false)
   const [formData, setFormData] = useState({
     name: "",
@@ -54,6 +66,7 @@ export default function CreateProductModal({ onProductCreated, product, onProduc
     currentPhase: "waitlist" as "waitlist" | "originals" | "echo",
     status: "active" as "active" | "paused" | "ended",
   paymentOptions: [] as string[],
+  discountPercent: "",
   })
   const [releasePhases, setReleasePhases] = useState({
     waitlistStart: "",
@@ -78,6 +91,11 @@ export default function CreateProductModal({ onProductCreated, product, onProduc
     if (!formData.name) validationErrors.push("Product name is required")
     if (!formData.sku) validationErrors.push("SKU is required")
     if (!formData.basePrice) validationErrors.push("Base price is required")
+    // validate discount percent if provided
+    if (formData.discountPercent) {
+      const d = Number.parseFloat(formData.discountPercent)
+      if (!Number.isFinite(d) || d < 0 || d > 100) validationErrors.push("Discount percent must be a number between 0 and 100")
+    }
 
     // parse dates if provided
     const parseDate = (s: string) => (s ? new Date(s) : null)
@@ -130,6 +148,7 @@ export default function CreateProductModal({ onProductCreated, product, onProduc
         body: JSON.stringify({
           ...formData,
           basePrice: Number.parseInt(formData.basePrice) * 100, // Convert to cents
+          discountPercent: formData.discountPercent ? Number.parseFloat(formData.discountPercent) : 0,
           variants: variants.filter((v) => v.color && v.material),
           images: sanitizedImages,
           releasePhases: releasePhasesPayload,
@@ -150,6 +169,7 @@ export default function CreateProductModal({ onProductCreated, product, onProduc
           currentPhase: "waitlist",
           status: "active",
           paymentOptions: [],
+          discountPercent: "",
         })
         setVariants([{ color: "", material: "", stock: 0, reserved: 0 }])
         setImages([])
@@ -200,6 +220,7 @@ export default function CreateProductModal({ onProductCreated, product, onProduc
         currentPhase: product.currentPhase || "waitlist",
         status: product.status || "active",
   paymentOptions: product.paymentOptions || [],
+  discountPercent: product.discountPercent != null ? String(product.discountPercent) : "",
       })
       setVariants(product.variants?.length ? product.variants : [{ color: "", material: "", stock: 0, reserved: 0 }])
       setImages(product.images || [])
@@ -304,6 +325,19 @@ export default function CreateProductModal({ onProductCreated, product, onProduc
                   />
                 </div>
                 <div>
+                  <Label htmlFor="discountPercent">Discount (%)</Label>
+                  <Input
+                    id="discountPercent"
+                    type="number"
+                    step="0.01"
+                    min={0}
+                    max={100}
+                    value={formData.discountPercent}
+                    onChange={(e) => setFormData({ ...formData, discountPercent: e.target.value })}
+                    placeholder="e.g., 10"
+                  />
+                </div>
+                <div>
                   <Label htmlFor="currentPhase">Initial Phase</Label>
                   <Select
                     value={formData.currentPhase}
@@ -318,6 +352,7 @@ export default function CreateProductModal({ onProductCreated, product, onProduc
                       <SelectItem value="waitlist">Waitlist</SelectItem>
                       <SelectItem value="originals">Originals</SelectItem>
                       <SelectItem value="echo">Echo</SelectItem>
+                      <SelectItem value="press">Press Edition</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

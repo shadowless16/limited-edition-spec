@@ -18,28 +18,28 @@ export default function HowItWorksPage() {
           </p>
         </div>
 
-        {/* Three Phases */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+        {/* Four Phases */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
           <Card className="text-center">
             <CardHeader>
               <div className="w-16 h-16 rounded-full bg-accent text-accent-foreground flex items-center justify-center font-bold text-2xl mx-auto mb-4">
                 1
               </div>
               <CardTitle className="text-xl">Waitlist Phase</CardTitle>
-              <CardDescription>Join early, get notified first</CardDescription>
+              <CardDescription>Lock in your piece before the world sees it</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex items-center gap-2 text-sm">
-                <Users className="h-4 w-4 text-muted-foreground" />
-                <span>Join the waitlist for free</span>
-              </div>
-              <div className="flex items-center gap-2 text-sm">
-                <Bell className="h-4 w-4 text-muted-foreground" />
-                <span>Get notified when originals phase starts</span>
+                <CreditCard className="h-4 w-4 text-muted-foreground" />
+                <span>Secure your spot with full payment</span>
               </div>
               <div className="flex items-center gap-2 text-sm">
                 <Clock className="h-4 w-4 text-muted-foreground" />
-                <span>Early access to purchase</span>
+                <span>15% off first 7 days, then 10% off</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm">
+                <Shield className="h-4 w-4 text-muted-foreground" />
+                <span>Priority access - numbered & limited to 100</span>
               </div>
             </CardContent>
           </Card>
@@ -50,20 +50,20 @@ export default function HowItWorksPage() {
                 2
               </div>
               <CardTitle className="text-xl">Originals Phase</CardTitle>
-              <CardDescription>Limited quantities, early bird pricing</CardDescription>
+              <CardDescription>For those who missed the Waitlist</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex items-center gap-2 text-sm">
                 <ShoppingBag className="h-4 w-4 text-muted-foreground" />
-                <span>Purchase available products</span>
+                <span>Purchase any remaining Originals at full price</span>
               </div>
               <div className="flex items-center gap-2 text-sm">
-                <CreditCard className="h-4 w-4 text-muted-foreground" />
-                <span>Early bird discount pricing</span>
+                <Shield className="h-4 w-4 text-muted-foreground" />
+                <span>Same strict limit: 100 pieces only per design</span>
               </div>
               <div className="flex items-center gap-2 text-sm">
                 <Clock className="h-4 w-4 text-muted-foreground" />
-                <span>First come, first served</span>
+                <span>First come, first served - gone forever when sold out</span>
               </div>
             </CardContent>
           </Card>
@@ -74,20 +74,44 @@ export default function HowItWorksPage() {
                 3
               </div>
               <CardTitle className="text-xl">Echo Phase</CardTitle>
-              <CardDescription>Request specific variants with escrow</CardDescription>
+              <CardDescription>A second chance — but never the same</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex items-center gap-2 text-sm">
+                <Users className="h-4 w-4 text-muted-foreground" />
+                <span>Available only if 100+ requests within 2 weeks</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm">
+                <Shield className="h-4 w-4 text-muted-foreground" />
+                <span>Limited to 150 pieces per design</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm">
+                <Clock className="h-4 w-4 text-muted-foreground" />
+                <span>Only 2 fabrics × 2 colors offered</span>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="text-center border-purple-200">
+            <CardHeader>
+              <div className="w-16 h-16 rounded-full bg-purple-100 text-purple-800 flex items-center justify-center font-bold text-2xl mx-auto mb-4">
+                4
+              </div>
+              <CardTitle className="text-xl">Press Editions</CardTitle>
+              <CardDescription>The rarest: only for influencers</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex items-center gap-2 text-sm">
                 <Shield className="h-4 w-4 text-muted-foreground" />
-                <span>Escrow protection</span>
+                <span>Only 10 pieces per batch worldwide</span>
               </div>
               <div className="flex items-center gap-2 text-sm">
                 <Users className="h-4 w-4 text-muted-foreground" />
-                <span>Request specific variants</span>
+                <span>1 exclusive fabric, up to 5 secret colors</span>
               </div>
               <div className="flex items-center gap-2 text-sm">
-                <Clock className="h-4 w-4 text-muted-foreground" />
-                <span>Fulfillment when available</span>
+                <CreditCard className="h-4 w-4 text-muted-foreground" />
+                <span>30% surcharge for non-influencers</span>
               </div>
             </CardContent>
           </Card>
@@ -104,15 +128,13 @@ export default function HowItWorksPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-muted-foreground">
-                Join the waitlist for any upcoming product drop. This is completely free and gives you priority access
-                when the originals phase begins. You'll receive email notifications and can track your position in the
-                queue.
+                Secure your spot with full payment before the world sees it. Enjoy exclusive early bird pricing and get priority access with every Original numbered and limited to 100 pieces worldwide.
               </p>
               <ul className="list-disc list-inside space-y-2 text-sm text-muted-foreground">
-                <li>Free to join, no commitment required</li>
-                <li>Email notifications for phase transitions</li>
-                <li>Priority access to originals phase</li>
-                <li>Track your waitlist position</li>
+                <li>Secure your spot with full payment</li>
+                <li>Enjoy 15% off for the first 7 days, then 10% off until Waitlist closes</li>
+                <li>Get priority access — every Original is numbered and limited to 100 pieces worldwide</li>
+                <li>Certificate of Authenticity included</li>
               </ul>
             </CardContent>
           </Card>
@@ -126,13 +148,12 @@ export default function HowItWorksPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-muted-foreground">
-                When products become available, waitlist members get first access to purchase at early bird pricing.
-                Stock is limited and available on a first-come, first-served basis.
+                For those who missed the Waitlist. Purchase any remaining Originals at full price with the same strict limit of 100 pieces only per design.
               </p>
               <ul className="list-disc list-inside space-y-2 text-sm text-muted-foreground">
-                <li>Early bird discount pricing (typically 10-20% off)</li>
-                <li>Limited quantities available</li>
-                <li>Secure payment processing</li>
+                <li>Purchase any remaining Originals at full price</li>
+                <li>Same strict limit: 100 pieces only per design</li>
+                <li>First come, first served — once 100 are gone, Originals are gone forever</li>
                 <li>Certificate of Authenticity included</li>
               </ul>
             </CardContent>
@@ -147,14 +168,34 @@ export default function HowItWorksPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-muted-foreground">
-                Missed out on the originals phase? Request specific product variants in the echo phase with escrow
-                protection. Your payment is held securely until the product becomes available.
+                A second chance — but never the same. Available only if 100+ requests are made within 2 weeks after Originals sell out. All orders are prepaid and fulfilled once Echo is unlocked.
               </p>
               <ul className="list-disc list-inside space-y-2 text-sm text-muted-foreground">
-                <li>Request specific colors, materials, or sizes</li>
-                <li>Escrow payment protection</li>
-                <li>Fulfillment when products become available</li>
-                <li>Full refund if request cannot be fulfilled</li>
+                <li>Available only if 100+ requests are made within 2 weeks after Originals sell out</li>
+                <li>Limited to 150 pieces per design</li>
+                <li>Only 2 fabrics × 2 colors are offered</li>
+                <li>All orders prepaid and fulfilled once Echo is unlocked</li>
+              </ul>
+            </CardContent>
+          </Card>
+
+          <Card className="border-purple-200">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="h-5 w-5 text-purple-600" />
+                Press Editions Details
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-muted-foreground">
+                Press Editions (PE) are the rarest: only 10 pieces per batch worldwide. They come in 1 exclusive fabric and up to 5 secret colors. Press Editions are given to influencers who meet requirements, or available for purchase with a 30% surcharge for non-influencers.
+              </p>
+              <ul className="list-disc list-inside space-y-2 text-sm text-muted-foreground">
+                <li>Only 10 pieces per batch worldwide</li>
+                <li>1 exclusive fabric and up to 5 secret colors</li>
+                <li>Given to influencers who meet requirements</li>
+                <li>Available for purchase with 30% surcharge for non-influencers</li>
+                <li>Never listed publicly and cannot be restocked</li>
               </ul>
             </CardContent>
           </Card>

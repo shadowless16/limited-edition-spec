@@ -26,6 +26,15 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     const data = await request.json()
   // `params` may be a Promise in Next.js App Router; await before using
   const { id } = await params as { id: string }
+  // Validate discountPercent if provided
+  if (data && typeof data.discountPercent !== 'undefined') {
+    const dp = Number(data.discountPercent)
+    if (!Number.isFinite(dp) || dp < 0 || dp > 100) {
+      return NextResponse.json({ error: 'Invalid discountPercent; must be a number between 0 and 100' }, { status: 400 })
+    }
+    data.discountPercent = dp
+  }
+
   const product = await Product.findByIdAndUpdate(id, { $set: data }, { new: true, runValidators: true })
 
     if (!product) {
@@ -113,6 +122,14 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
   if (Array.isArray(paymentOptions)) updatePayload.paymentOptions = paymentOptions
     if (finalStatus !== undefined) updatePayload.status = finalStatus
     if (finalReleasePhases !== undefined) updatePayload.releasePhases = finalReleasePhases
+    // Validate and include discountPercent if provided in PATCH payload
+    if (typeof data.discountPercent !== 'undefined') {
+      const dp = Number(data.discountPercent)
+      if (!Number.isFinite(dp) || dp < 0 || dp > 100) {
+        return NextResponse.json({ error: 'Invalid discountPercent; must be a number between 0 and 100' }, { status: 400 })
+      }
+      updatePayload.discountPercent = dp
+    }
 
   // DEBUG: log incoming data and computed payload
   console.log("[admin][PATCH] product id=", id)

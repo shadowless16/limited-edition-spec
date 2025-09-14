@@ -48,8 +48,8 @@ export function formatPrice(priceInCents: number): string {
 
 export function calculatePhasePrice(
   basePrice: number,
-  phase: "waitlist" | "originals" | "echo" | "ended",
-  user?: { priorityClub?: boolean; waitlistPosition?: number },
+  phase: "waitlist" | "originals" | "echo" | "press" | "ended",
+  user?: { priorityClub?: boolean; waitlistPosition?: number; isInfluencer?: boolean },
   productLaunchDate?: Date,
 ): PricingResult {
   let discount = 0
@@ -58,51 +58,50 @@ export function calculatePhasePrice(
 
   switch (phase) {
     case "waitlist":
-      // No purchase available in waitlist phase
-      return { basePrice, discount: 0, finalPrice: basePrice, discountReason: "none" }
+      // Waitlist phase allows full payment with early bird pricing
+      if (productLaunchDate) {
+        const daysSinceLaunch = Math.floor((now.getTime() - productLaunchDate.getTime()) / (1000 * 60 * 60 * 24))
+        
+        if (daysSinceLaunch <= 7) {
+          discount = 15 // 15% for first 7 days
+          reason = "early_bird"
+        } else {
+          discount = 10 // 10% after first 7 days until waitlist closes
+          reason = "regular"
+        }
+      } else {
+        discount = 15 // Default early bird discount
+        reason = "early_bird"
+      }
+      break
+
+    case "originals":
+      // Originals phase is full price - no discounts
+      discount = 0
+      reason = "none"
+      break
+
+    case "echo":
+      // Echo phase is full price - prepaid orders
+      discount = 0
+      reason = "none"
+      break
+
+    case "press":
+      // Press phase has 30% surcharge for non-influencers
+      if (user?.isInfluencer) {
+        discount = 0
+        reason = "none"
+      } else {
+        // 30% surcharge = -30% discount
+        discount = -30
+        reason = "none"
+      }
+      break
 
     case "ended":
       // Product ended — no discount and not purchasable
       return { basePrice, discount: 0, finalPrice: basePrice, discountReason: "none" }
-
-    case "originals":
-      // Early bird discount for originals phase
-      if (productLaunchDate) {
-        const daysSinceLaunch = Math.floor((now.getTime() - productLaunchDate.getTime()) / (1000 * 60 * 60 * 24))
-
-        if (daysSinceLaunch <= 3) {
-          discount = 20 // 20% for first 3 days
-          reason = "early_bird"
-        } else if (daysSinceLaunch <= 7) {
-          discount = 15 // 15% for days 4-7
-          reason = "early_bird"
-        } else {
-          discount = 10 // 10% regular originals discount
-          reason = "regular"
-        }
-      } else {
-        discount = 15 // Default originals discount
-        reason = "early_bird"
-      }
-
-      // Waitlist priority bonus (additional 5% for top 50 positions)
-      if (user?.waitlistPosition && user.waitlistPosition <= 50) {
-        discount = Math.max(discount + 5, 25) // Cap at 25% total
-        reason = "priority_club"
-      }
-      break
-
-    case "echo":
-      // Echo phase has regular pricing with small discount
-      discount = 5
-      reason = "regular"
-      break
-  }
-
-  // Priority club override (minimum 12% discount)
-  if (user?.priorityClub && discount < 12) {
-    discount = 12
-    reason = "priority_club"
   }
 
   const finalPrice = Math.round(basePrice * (1 - discount / 100))
@@ -116,7 +115,7 @@ export function getDiscountLabel(discountReason: PricingResult["discountReason"]
     case "priority_club":
       return `${discount}% Priority Club`
     case "regular":
-      return `${discount}% Limited Time`
+      return `${discount}% Waitlist Discount`
     default:
       return ""
   }

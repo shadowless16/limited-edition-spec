@@ -16,6 +16,7 @@ interface CheckoutClientProps {
 
 export default function CheckoutClient({ orderId }: CheckoutClientProps) {
   const [order, setOrder] = useState<any>(null)
+  const [paymentMethods, setPaymentMethods] = useState<any[]>([])
   const [shippingAddress, setShippingAddress] = useState({
     firstName: "",
     lastName: "",
@@ -33,6 +34,7 @@ export default function CheckoutClient({ orderId }: CheckoutClientProps) {
 
   useEffect(() => {
     fetchOrder()
+    fetchPaymentMethods()
   }, [orderId])
 
   const fetchOrder = async () => {
@@ -62,6 +64,18 @@ export default function CheckoutClient({ orderId }: CheckoutClientProps) {
       })
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  const fetchPaymentMethods = async () => {
+    try {
+      const response = await fetch('/api/payment-methods')
+      if (response.ok) {
+        const methods = await response.json()
+        setPaymentMethods(methods.filter((m: any) => m.enabled))
+      }
+    } catch (error) {
+      console.error('Failed to fetch payment methods:', error)
     }
   }
 
@@ -254,7 +268,14 @@ export default function CheckoutClient({ orderId }: CheckoutClientProps) {
             )}
 
             {step === "payment" && (
-              <PaymentForm orderId={orderId} amount={order.total} onSuccess={handlePaymentSuccess} onError={handlePaymentError} />
+              <PaymentForm 
+                orderId={orderId} 
+                amount={order.total} 
+                availableOptions={paymentMethods.map(m => m.key)}
+                methodDetails={paymentMethods.map(m => ({ key: m.key, name: m.name, details: m.details }))}
+                onSuccess={handlePaymentSuccess} 
+                onError={handlePaymentError} 
+              />
             )}
           </div>
         </div>

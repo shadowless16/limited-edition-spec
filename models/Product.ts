@@ -17,13 +17,28 @@ interface IReleasePhases {
     startDate: Date
     endDate: Date
     isActive: boolean
-    maxQuantity: number
+    maxQuantity: number // Always 100 for originals
   }
   echo: {
     startDate: Date
     endDate: Date
     isActive: boolean
-    windowDays: number
+    windowDays: number // 14 days (2 weeks) for requests
+    minRequests: number // 100+ requests required
+    maxQuantity: number // Always 150 for echo
+    limitedVariants: {
+      fabrics: string[] // Only 2 fabrics allowed
+      colors: string[] // Only 2 colors allowed
+    }
+  }
+  press: {
+    startDate: Date
+    endDate: Date
+    isActive: boolean
+    maxQuantity: number // Always 10 for press editions
+    exclusiveFabric: string // 1 exclusive fabric
+    secretColors: string[] // Up to 5 secret colors
+    surchargePercent: number // 30% surcharge for non-influencers
   }
 }
 
@@ -36,8 +51,10 @@ export interface IProduct extends Document {
   variants: IVariant[]
   // Payment options allowed for this product (e.g. bank_transfer, crypto)
   paymentOptions?: string[]
+  // Optional product-level discount percentage (0-100)
+  discountPercent?: number
   releasePhases: IReleasePhases
-  status: "draft" | "waitlist" | "originals" | "echo" | "ended"
+  status: "draft" | "waitlist" | "originals" | "echo" | "press" | "ended"
   createdAt: Date
   updatedAt: Date
 }
@@ -85,6 +102,7 @@ const ProductSchema = new Schema<IProduct>(
     ],
     variants: [VariantSchema],
   paymentOptions: [String],
+  discountPercent: { type: Number, default: 0, min: 0, max: 100 },
     releasePhases: {
       waitlist: {
         ...ReleasePhaseSchema.obj,
@@ -95,12 +113,25 @@ const ProductSchema = new Schema<IProduct>(
       },
       echo: {
         ...ReleasePhaseSchema.obj,
-        windowDays: { type: Number, default: 30, min: 1 },
+        windowDays: { type: Number, default: 14, min: 1 }, // 2 weeks for requests
+        minRequests: { type: Number, default: 100, min: 1 }, // 100+ requests required
+        maxQuantity: { type: Number, default: 150, min: 1 }, // 150 pieces max
+        limitedVariants: {
+          fabrics: [{ type: String }], // Only 2 fabrics
+          colors: [{ type: String }], // Only 2 colors
+        },
+      },
+      press: {
+        ...ReleasePhaseSchema.obj,
+        maxQuantity: { type: Number, default: 10, min: 1 }, // 10 pieces max
+        exclusiveFabric: { type: String }, // 1 exclusive fabric
+        secretColors: [{ type: String }], // Up to 5 secret colors
+        surchargePercent: { type: Number, default: 30, min: 0 }, // 30% surcharge
       },
     },
     status: {
       type: String,
-      enum: ["draft", "waitlist", "originals", "echo", "ended"],
+      enum: ["draft", "waitlist", "originals", "echo", "press", "ended"],
       default: "draft",
     },
   },

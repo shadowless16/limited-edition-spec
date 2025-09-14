@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
     }
 
     const user = await verifyToken(token)
-    if (!user || !user.isAdmin) {
+    if (!user || (user as any).role !== 'admin') {
       return NextResponse.json({ error: "Admin access required" }, { status: 403 })
     }
 
