@@ -8,6 +8,8 @@ export interface IUser extends Document {
   password: string
   priorityClub: boolean
   isAdmin?: boolean
+  isInfluencer?: boolean
+  influencerVerified?: boolean
   waitlistEntries: mongoose.Types.ObjectId[]
   orders: mongoose.Types.ObjectId[]
   // cart stores transient cart items for the user
@@ -63,6 +65,14 @@ const UserSchema = new Schema<IUser>(
         },
       ],
     isAdmin: {
+      type: Boolean,
+      default: false,
+    },
+    isInfluencer: {
+      type: Boolean,
+      default: false,
+    },
+    influencerVerified: {
       type: Boolean,
       default: false,
     },

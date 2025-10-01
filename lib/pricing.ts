@@ -37,13 +37,13 @@ export function calculatePrice(basePrice: number, user: User, orderDate: Date, p
   return { basePrice, discount, finalPrice, discountReason: reason }
 }
 
-export function formatPrice(priceInCents: number): string {
-  // Format all prices in Nigerian Naira (NGN). Prices are stored in cents.
+export function formatPrice(priceInkobo: number): string {
+  // Format all prices in Nigerian Naira (NGN). Prices are stored in kobo.
   return new Intl.NumberFormat("en-NG", {
     style: "currency",
     currency: "NGN",
     maximumFractionDigits: 2,
-  }).format(priceInCents / 100)
+  }).format(priceInkobo / 100)
 }
 
 export function calculatePhasePrice(

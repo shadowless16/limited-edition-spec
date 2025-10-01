@@ -1,93 +1,140 @@
 import Link from "next/link"
-import { Mail, Phone, MapPin } from "lucide-react"
+import { Mail, Phone, MapPin, Facebook, Twitter, Instagram, Youtube } from "lucide-react"
 
 export default function Footer() {
   return (
-    <footer className="bg-muted/30 border-t">
-      <div className="container mx-auto px-4 py-12">
+    <footer className="bg-foreground text-background">
+      <div className="container mx-auto px-4 py-16">
         <div className="grid md:grid-cols-4 gap-8">
           <div>
-            <div className="flex items-center space-x-2 mb-4">
-              <div className="h-8 w-8 rounded-full bg-primary" />
-              <span className="font-bold text-xl">LIMITED</span>
+            <div className="mb-6">
+              <span className="font-bold text-2xl tracking-wide">Mixtas</span>
             </div>
-            <p className="text-muted-foreground text-sm leading-relaxed">
-              Exclusive limited edition products through our innovative three-phase release system.
+            <p className="text-background/80 text-sm leading-relaxed mb-6">
+              Premium fashion for the modern lifestyle. Discover our curated collection of contemporary designs.
             </p>
+            <div className="flex space-x-4">
+              <Link href="#" className="text-background/60 hover:text-background transition-colors">
+                <Facebook className="h-5 w-5" />
+              </Link>
+              <Link href="#" className="text-background/60 hover:text-background transition-colors">
+                <Twitter className="h-5 w-5" />
+              </Link>
+              <Link href="#" className="text-background/60 hover:text-background transition-colors">
+                <Instagram className="h-5 w-5" />
+              </Link>
+              <Link href="#" className="text-background/60 hover:text-background transition-colors">
+                <Youtube className="h-5 w-5" />
+              </Link>
+            </div>
           </div>
 
           <div>
-            <h3 className="font-semibold mb-4">Products</h3>
-            <ul className="space-y-2 text-sm">
+            <h3 className="font-semibold mb-6 text-lg">Shop</h3>
+            <ul className="space-y-3 text-sm">
               <li>
-                <Link href="/products" className="text-muted-foreground hover:text-foreground transition-colors">
-                  All Products
+                <Link href="/products" className="text-background/80 hover:text-background transition-colors">
+                  Women
                 </Link>
               </li>
               <li>
-                <Link href="/waitlist" className="text-muted-foreground hover:text-foreground transition-colors">
-                  Join Waitlist
+                <Link href="/products" className="text-background/80 hover:text-background transition-colors">
+                  Men
                 </Link>
               </li>
               <li>
-                <Link href="/how-it-works" className="text-muted-foreground hover:text-foreground transition-colors">
-                  How It Works
+                <Link href="/products" className="text-background/80 hover:text-background transition-colors">
+                  Shoes
+                </Link>
+              </li>
+              <li>
+                <Link href="/products" className="text-background/80 hover:text-background transition-colors">
+                  Bags
+                </Link>
+              </li>
+              <li>
+                <Link href="/products" className="text-background/80 hover:text-background transition-colors">
+                  Accessories
                 </Link>
               </li>
             </ul>
           </div>
 
           <div>
-            <h3 className="font-semibold mb-4">Support</h3>
-            <ul className="space-y-2 text-sm">
+            <h3 className="font-semibold mb-6 text-lg">Company</h3>
+            <ul className="space-y-3 text-sm">
               <li>
-                <Link href="/faq" className="text-muted-foreground hover:text-foreground transition-colors">
+                <Link href="/about" className="text-background/80 hover:text-background transition-colors">
+                  About Us
+                </Link>
+              </li>
+              <li>
+                <Link href="/contact" className="text-background/80 hover:text-background transition-colors">
+                  Contact
+                </Link>
+              </li>
+              <li>
+                <Link href="/careers" className="text-background/80 hover:text-background transition-colors">
+                  Careers
+                </Link>
+              </li>
+              <li>
+                <Link href="/press" className="text-background/80 hover:text-background transition-colors">
+                  Press
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <h3 className="font-semibold mb-6 text-lg">Support</h3>
+            <ul className="space-y-3 text-sm">
+              <li>
+                <Link href="/faq" className="text-background/80 hover:text-background transition-colors">
                   FAQ
                 </Link>
               </li>
               <li>
-                <Link href="/contact" className="text-muted-foreground hover:text-foreground transition-colors">
-                  Contact Us
+                <Link href="/shipping" className="text-background/80 hover:text-background transition-colors">
+                  Shipping & Returns
                 </Link>
               </li>
               <li>
-                <Link href="/terms" className="text-muted-foreground hover:text-foreground transition-colors">
+                <Link href="/size-guide" className="text-background/80 hover:text-background transition-colors">
+                  Size Guide
+                </Link>
+              </li>
+              <li>
+                <Link href="/terms" className="text-background/80 hover:text-background transition-colors">
                   Terms of Service
                 </Link>
               </li>
               <li>
-                <Link href="/privacy" className="text-muted-foreground hover:text-foreground transition-colors">
+                <Link href="/privacy" className="text-background/80 hover:text-background transition-colors">
                   Privacy Policy
                 </Link>
               </li>
             </ul>
           </div>
-
-          <div>
-            <h3 className="font-semibold mb-4">Contact</h3>
-            <div className="space-y-3 text-sm">
-              <div className="flex items-center space-x-2">
-                <Mail className="h-4 w-4 text-muted-foreground" />
-                <span className="text-muted-foreground">support@limited.com</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Phone className="h-4 w-4 text-muted-foreground" />
-                <span className="text-muted-foreground">+1 (555) 123-4567</span>
-              </div>
-              <div className="flex items-start space-x-2">
-                <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
-                <span className="text-muted-foreground">
-                  123 Limited Street
-                  <br />
-                  New York, NY 10001
-                </span>
-              </div>
-            </div>
-          </div>
         </div>
 
-        <div className="border-t mt-8 pt-8 text-center">
-          <p className="text-muted-foreground text-sm">© 2024 LIMITED. All rights reserved.</p>
+        <div className="border-t border-background/20 mt-12 pt-8">
+          <div className="flex flex-col md:flex-row justify-between items-center">
+            <p className="text-background/60 text-sm mb-4 md:mb-0">
+              © 2024 Mixtas. All rights reserved.
+            </p>
+            <div className="flex space-x-6 text-sm">
+              <Link href="/terms" className="text-background/60 hover:text-background transition-colors">
+                Terms
+              </Link>
+              <Link href="/privacy" className="text-background/60 hover:text-background transition-colors">
+                Privacy
+              </Link>
+              <Link href="/cookies" className="text-background/60 hover:text-background transition-colors">
+                Cookies
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
     </footer>

@@ -5,7 +5,7 @@ import ProductDetail from "@/components/product/ProductDetail"
 import Header from "@/components/layout/Header"
 
 interface ProductPageProps {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }
 
 async function getProduct(id: string) {
@@ -21,7 +21,7 @@ async function getProduct(id: string) {
 
 export default async function ProductPage({ params }: ProductPageProps) {
   // `params` may be a promise in Next.js; await it before using properties
-  const { id } = await params as { id: string }
+  const { id } = await params
   const product = await getProduct(id)
 
   if (!product) {
@@ -38,7 +38,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
 export async function generateMetadata({ params }: ProductPageProps) {
   // `params` may be a promise in Next.js; await it before using properties
-  const { id } = await params as { id: string }
+  const { id } = await params
   const product = await getProduct(id)
 
   if (!product) {

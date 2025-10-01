@@ -6,6 +6,10 @@ export interface IEchoRequest extends Document {
   variantId?: string
   contactEmail?: string
   contactPhone?: string
+  amount: number
+  paymentStatus: "pending" | "escrowed" | "refunded" | "released"
+  paymentIntentId?: string
+  escrowReleaseDate?: Date
   createdAt: Date
 }
 
@@ -16,6 +20,14 @@ const EchoRequestSchema = new Schema<IEchoRequest>(
     variantId: { type: String },
     contactEmail: { type: String },
     contactPhone: { type: String },
+    amount: { type: Number, required: true, min: 0 },
+    paymentStatus: { 
+      type: String, 
+      enum: ["pending", "escrowed", "refunded", "released"], 
+      default: "pending" 
+    },
+    paymentIntentId: { type: String },
+    escrowReleaseDate: { type: Date },
   },
   { timestamps: true }
 )

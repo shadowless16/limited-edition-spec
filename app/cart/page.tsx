@@ -95,7 +95,7 @@ export default function CartPage() {
   }
 
   const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
-  const shipping = subtotal > 10000 ? 0 : 999 // Free shipping over $100
+  const shipping = subtotal > 10000 ? 0 : 999 // Free shipping over ₦100
   const total = subtotal + shipping
 
   if (isLoading) {
@@ -217,7 +217,7 @@ export default function CartPage() {
                   <span>Shipping</span>
                   <span>{shipping === 0 ? "Free" : formatPrice(shipping)}</span>
                 </div>
-                {shipping === 0 && <p className="text-sm text-primary">🎉 Free shipping on orders over $100!</p>}
+                {shipping === 0 && <p className="text-sm text-primary">🎉 Free shipping on orders over ₦100!</p>}
                 <hr />
                 <div className="flex justify-between font-semibold text-lg">
                   <span>Total</span>

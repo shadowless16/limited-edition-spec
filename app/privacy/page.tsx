@@ -1,6 +1,11 @@
+import Header from "@/components/layout/Header"
+import Footer from "@/components/layout/Footer"
+
 export default function PrivacyPage() {
   return (
-    <div className="container mx-auto px-4 py-12 max-w-4xl">
+    <div className="min-h-screen bg-background">
+      <Header />
+      <div className="container mx-auto px-4 py-12 max-w-4xl">
       <h1 className="text-4xl font-bold mb-8">Privacy Policy</h1>
 
       <div className="prose prose-gray max-w-none">
@@ -36,6 +41,9 @@ export default function PrivacyPage() {
           </p>
         </section>
       </div>
+      </div>
+      
+      <Footer />
     </div>
   )
 }

@@ -23,18 +23,13 @@ export async function GET(request: NextRequest) {
       .sort({ [sortField]: sortOrder })
       .limit(Math.min(limit, 1000))
 
-    // Transform to include email at top-level for ease of rendering in admin UI
+    // Transform to include email and product name at top-level for ease of rendering in admin UI
     const transformed = waitlistEntries.map((entry) => ({
       _id: entry._id,
-      product: entry.productId ? {
-        id: (entry.productId as any)._id,
-        name: (entry.productId as any).name,
-        sku: (entry.productId as any).sku,
-        status: (entry.productId as any).status,
-        currentPhase: (entry.productId as any).currentPhase,
-      } : null,
-  email: (entry as any).userId?.email || null,
-  phone: (entry as any).userId?.phone || null,
+      productId: entry.productId ? (entry.productId as any)._id : null,
+      productName: entry.productId ? (entry.productId as any).name : "Unknown Product",
+      email: (entry as any).userId?.email || null,
+      phone: (entry as any).userId?.phone || null,
       position: entry.position,
       status: entry.status,
       createdAt: entry.createdAt,

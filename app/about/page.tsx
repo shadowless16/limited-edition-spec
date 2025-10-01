@@ -1,4 +1,5 @@
 import Header from "@/components/layout/Header"
+import Footer from "@/components/layout/Footer"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -15,12 +16,11 @@ export default function AboutPage() {
         <div className="text-center mb-16">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/10 text-accent text-sm font-medium mb-6">
             <Sparkles className="h-4 w-4" />
-            About LIMITED
+            About Mixtas
           </div>
-          <h1 className="text-4xl font-bold mb-4">Redefining Exclusive Commerce</h1>
+          <h1 className="text-4xl font-bold mb-4">Premium Fashion for Modern Living</h1>
           <p className="text-lg text-muted-foreground text-pretty max-w-2xl mx-auto">
-            We believe in the power of scarcity, the beauty of craftsmanship, and the excitement of exclusive access.
-            Our three-phase system ensures fair distribution of truly limited-edition products.
+            We curate contemporary fashion that speaks to the modern lifestyle. Our collections blend timeless elegance with cutting-edge design, creating pieces that define your personal style.
           </p>
         </div>
 
@@ -32,9 +32,7 @@ export default function AboutPage() {
             </CardHeader>
             <CardContent className="text-center">
               <p className="text-muted-foreground leading-relaxed">
-                To create a fair and transparent marketplace for limited-edition products where true enthusiasts can
-                access exclusive items through our innovative waitlist, originals, and echo phase system. We eliminate
-                the chaos of traditional drops while maintaining the excitement of limited availability.
+                To provide premium fashion that empowers individuals to express their unique style. We believe fashion should be accessible, sustainable, and inspiring - creating pieces that make you feel confident and authentic in every moment.
               </p>
             </CardContent>
           </Card>
@@ -192,6 +190,8 @@ export default function AboutPage() {
           </div>
         </div>
       </div>
+      
+      <Footer />
     </div>
   )
 }

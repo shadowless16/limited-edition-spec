@@ -349,9 +349,9 @@ export default function ProductDetail({ product, user }: ProductDetailProps) {
                 <Input id="phone" placeholder="+15551234567" value={phone} onChange={(e) => setPhone(e.target.value)} />
               </div>
 
-              <Button onClick={handleAddToCart} disabled={isLoading} className="w-full">
-                <ShoppingCart className="w-4 h-4 mr-2" />
-                {isLoading ? "Processing..." : `Secure Your Piece - ${formatPrice(pricingResult.finalPrice)}`}
+              <Button onClick={handleWaitlistJoin} disabled={isLoading} className="w-full">
+                <Mail className="w-4 h-4 mr-2" />
+                {isLoading ? "Joining..." : "Join Waitlist"}
               </Button>
             </CardContent>
           </Card>
@@ -486,6 +486,15 @@ export default function ProductDetail({ product, user }: ProductDetailProps) {
                   </Card>
                 )}
               </div>
+            </CardContent>
+          </Card>
+        )
+      default:
+        return (
+          <Card>
+            <CardContent className="p-6">
+              <p className="text-center text-muted-foreground">Product status: {product.status}</p>
+              <p className="text-center text-muted-foreground">No action available for this product phase.</p>
             </CardContent>
           </Card>
         )

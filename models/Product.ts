@@ -55,6 +55,9 @@ export interface IProduct extends Document {
   discountPercent?: number
   releasePhases: IReleasePhases
   status: "draft" | "waitlist" | "originals" | "echo" | "press" | "ended"
+  allocatedCount: number
+  productionStatus: "pending" | "started" | "completed"
+  productionStartDate?: Date
   createdAt: Date
   updatedAt: Date
 }
@@ -133,6 +136,19 @@ const ProductSchema = new Schema<IProduct>(
       type: String,
       enum: ["draft", "waitlist", "originals", "echo", "press", "ended"],
       default: "draft",
+    },
+    allocatedCount: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    productionStatus: {
+      type: String,
+      enum: ["pending", "started", "completed"],
+      default: "pending",
+    },
+    productionStartDate: {
+      type: Date,
     },
   },
   {

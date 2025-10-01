@@ -102,14 +102,14 @@ export async function POST(request: NextRequest) {
       // no-op placeholder for future pricing logic
     }
 
-  // Build order totals using fixed tax and shipping amounts (values are in cents)
-  // Allow overriding via environment variables FIXED_TAX_CENTS and FIXED_SHIPPING_CENTS
-  const FIXED_TAX_CENTS = Number(process.env.FIXED_TAX_CENTS) || 500 // default 500 cents
-  const FIXED_SHIPPING_CENTS = Number(process.env.FIXED_SHIPPING_CENTS) || 1000 // default 1000 cents
+  // Build order totals using fixed tax and shipping amounts (values are in kobo)
+  // Allow overriding via environment variables FIXED_TAX_kobo and FIXED_SHIPPING_kobo
+  const FIXED_TAX_kobo = Number(process.env.FIXED_TAX_kobo) || 500 // default 500 kobo
+  const FIXED_SHIPPING_kobo = Number(process.env.FIXED_SHIPPING_kobo) || 1000 // default 1000 kobo
 
   const subtotal = unitPrice * quantity
-  const tax = FIXED_TAX_CENTS
-  const shipping = FIXED_SHIPPING_CENTS
+  const tax = FIXED_TAX_kobo
+  const shipping = FIXED_SHIPPING_kobo
   const total = subtotal + tax + shipping
 
     // Generate a simple order number

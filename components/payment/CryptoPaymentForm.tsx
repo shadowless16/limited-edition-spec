@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea"
 interface CryptoPaymentDetails {
   bitcoinAddress?: string
   ethereumAddress?: string
-  usdcAddress?: string
+  ngncAddress?: string
   litecoinAddress?: string
   instructions: string
 }
@@ -63,11 +63,11 @@ export default function CryptoPaymentForm({ details, onSave, onCancel, isLoading
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="usdcAddress">USDC Address</Label>
+              <Label htmlFor="ngncAddress">NGNC Address</Label>
               <Input
-                id="usdcAddress"
-                value={formData.usdcAddress || ''}
-                onChange={(e) => updateField('usdcAddress', e.target.value)}
+                id="ngncAddress"
+                value={formData.ngncAddress || ''}
+                onChange={(e) => updateField('ngncAddress', e.target.value)}
                 placeholder="e.g., 0x742d35Cc6634C0532925a3b8D0C9e3e0C8b0e9e0"
               />
             </div>

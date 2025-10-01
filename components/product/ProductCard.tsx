@@ -64,52 +64,32 @@ export default function ProductCard({ product, waitlistPosition, user }: Product
   }
 
   const getActionButton = () => {
-    switch (product.status) {
-      case "waitlist":
-        return (
-          <Button className="w-full" size="lg" asChild>
-            <Link href={`/product/${product.id}`}>
-              {waitlistPosition ? `Position #${waitlistPosition}` : "Join Waitlist"}
-            </Link>
-          </Button>
-        )
-      case "originals":
-        return (
-          <Button className="w-full" size="lg" asChild>
-            <Link href={`/product/${product.id}`}>Buy Now - {formatPrice(pricingResult.finalPrice)}</Link>
-          </Button>
-        )
-      case "echo":
-        return (
-          <Button variant="outline" className="w-full bg-transparent" size="lg" asChild>
-            <Link href={`/product/${product.id}`}>Request Echo</Link>
-          </Button>
-        )
-      case "ended":
-        return (
-          <Button variant="secondary" className="w-full" size="lg" disabled>
-            Sold Out
-          </Button>
-        )
-      default:
-        return null
-    }
+    return null // Remove action buttons for cleaner grid layout
   }
 
   const totalStock = product.variants.reduce((sum, variant) => sum + variant.stock, 0)
 
   return (
-    <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-300">
+    <Card className="overflow-hidden hover:shadow-lg transition-all duration-300 group border-0 bg-transparent">
       <Link href={`/product/${product.id}`} className="block">
-      <div className="relative aspect-square">
-        <Image
-          src={product.images[0] || "/placeholder.svg?height=400&width=400&query=limited edition product"}
-          alt={product.name}
-          fill
-          className="object-cover"
-        />
-        <div className="absolute top-3 left-3">{getStatusBadge()}</div>
-        {totalStock <= 10 && totalStock > 0 && (
+      <div className="relative aspect-square rounded-lg overflow-hidden mb-4">
+        <div className="w-full h-full bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center">
+          <div className="text-center text-muted-foreground">
+            <div className="w-16 h-16 mx-auto mb-2 bg-muted-foreground/20 rounded-full flex items-center justify-center">
+              <div className="w-8 h-8 bg-muted-foreground/40 rounded" />
+            </div>
+            <p className="text-sm">Product Image</p>
+          </div>
+        </div>
+        
+        {product.status === "waitlist" && (
+          <div className="absolute top-3 left-3">
+            <Badge variant="secondary" className="bg-accent text-accent-foreground text-xs">
+              Waitlist
+            </Badge>
+          </div>
+        )}
+        {totalStock <= 10 && totalStock > 0 && product.status === "originals" && (
           <div className="absolute top-3 right-3">
             <Badge variant="destructive" className="text-xs">
               Only {totalStock} left
@@ -118,103 +98,42 @@ export default function ProductCard({ product, waitlistPosition, user }: Product
         )}
         {pricingResult.discount > 0 && product.status !== "waitlist" && (
           <div className="absolute bottom-3 left-3">
-            <Badge className="bg-accent text-accent-foreground">
-              <Percent className="h-3 w-3 mr-1" />
+            <Badge className="bg-primary text-primary-foreground text-xs">
               {pricingResult.discount}% OFF
             </Badge>
           </div>
         )}
       </div>
 
-      <CardContent className="p-4 space-y-4">
-        <div>
-          <h3 className="font-semibold text-lg text-balance">{product.name}</h3>
-          <p className="text-sm text-muted-foreground">{product.sku}</p>
-          {product.tags && product.tags.length > 0 && (
-            <div className="mt-2 flex flex-wrap gap-2">
-              {product.tags.map((t) => (
-                <Badge key={t} variant="outline" className="text-xs">{t}</Badge>
-              ))}
-            </div>
+      <div className="text-center space-y-2">
+        <h3 className="font-medium text-sm group-hover:text-primary transition-colors">{product.name}</h3>
+        <div className="flex items-center justify-center gap-2">
+          {pricingResult.discount > 0 && product.status !== "waitlist" ? (
+            <>
+              <span className="text-sm font-bold text-primary">{formatPrice(pricingResult.finalPrice)}</span>
+              <span className="text-xs text-muted-foreground line-through">{formatPrice(product.basePrice)}</span>
+            </>
+          ) : (
+            <span className="text-sm font-medium">{formatPrice(product.basePrice)}</span>
           )}
         </div>
-
-        <div className="flex items-center justify-between">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              {pricingResult.discount > 0 && product.status !== "waitlist" ? (
-                <>
-                  <span className="text-2xl font-bold text-primary">{formatPrice(pricingResult.finalPrice)}</span>
-                  <span className="text-sm text-muted-foreground line-through">{formatPrice(product.basePrice)}</span>
-                </>
-              ) : (
-                <span className="text-2xl font-bold">{formatPrice(product.basePrice)}</span>
-              )}
+        
+        {product.status === "originals" && (
+          <div className="flex justify-center">
+            <div className="flex">
+              {[1,2,3,4,5].map((star) => (
+                <svg key={star} className="w-3 h-3 text-primary fill-current" viewBox="0 0 20 20">
+                  <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/>
+                </svg>
+              ))}
             </div>
-            {pricingResult.discount > 0 && product.status !== "waitlist" && (
-              <p className="text-xs text-accent font-medium">
-                {getDiscountLabel(pricingResult.discountReason, pricingResult.discount)}
-              </p>
-            )}
           </div>
-        </div>
-
-        {/* Variant Colors Preview */}
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-muted-foreground">Colors:</span>
-          <div className="flex gap-1">
-            {product.variants.slice(0, 4).map((variant, index) => (
-              <div
-                key={index}
-                className="w-4 h-4 rounded-full border border-border"
-                style={{
-                  backgroundColor:
-                    variant.color.toLowerCase() === "black"
-                      ? "#000"
-                      : variant.color.toLowerCase() === "white"
-                        ? "#fff"
-                        : variant.color.toLowerCase() === "brown"
-                          ? "#8B4513"
-                          : variant.color.toLowerCase() === "blue"
-                            ? "#0066cc"
-                            : variant.color.toLowerCase() === "gray"
-                              ? "#666"
-                              : "#ccc",
-                }}
-              />
-            ))}
-            {product.variants.length > 4 && (
-              <span className="text-xs text-muted-foreground">+{product.variants.length - 4}</span>
-            )}
-          </div>
-        </div>
-
-        {/* Status Info */}
+        )}
+        
         {product.status === "waitlist" && waitlistPosition && (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Users className="h-4 w-4" />
-            <span>Est. notification in 3-5 days</span>
-          </div>
+          <p className="text-xs text-muted-foreground">Position #{waitlistPosition}</p>
         )}
-
-        {product.status === "echo" && (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Clock className="h-4 w-4" />
-            <span>Echo window closes in 15 days</span>
-          </div>
-        )}
-
-        {user?.priorityClub && (
-          <div className="flex items-center gap-2 text-sm text-primary">
-            <Badge variant="outline" className="text-xs">
-              Priority Club
-            </Badge>
-            <span>Extra savings applied</span>
-          </div>
-        )}
-
-        {getActionButton()}
-      </CardContent>
+      </div>
       </Link>
     </Card>
   )

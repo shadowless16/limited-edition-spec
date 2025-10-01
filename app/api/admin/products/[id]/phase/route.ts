@@ -3,7 +3,7 @@ import { connectToDatabase } from "@/lib/mongodb"
 import { Product } from "@/models/Product"
 import { verifyToken } from "@/lib/auth"
 
-export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const token = request.headers.get("authorization")?.replace("Bearer ", "")
     if (!token) {

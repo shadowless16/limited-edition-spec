@@ -147,7 +147,7 @@ export default function CreateProductModal({ onProductCreated, product, onProduc
         headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
         body: JSON.stringify({
           ...formData,
-          basePrice: Number.parseInt(formData.basePrice) * 100, // Convert to cents
+          basePrice: Number.parseInt(formData.basePrice) * 100, // Convert to kobo
           discountPercent: formData.discountPercent ? Number.parseFloat(formData.discountPercent) : 0,
           variants: variants.filter((v) => v.color && v.material),
           images: sanitizedImages,

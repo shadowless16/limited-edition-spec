@@ -5,6 +5,8 @@ import type React from "react"
 import { useState } from "react"
 import { Mail, Phone, MapPin, Send } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import Header from "@/components/layout/Header"
+import Footer from "@/components/layout/Footer"
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -28,7 +30,9 @@ export default function ContactPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-12 max-w-6xl">
+    <div className="min-h-screen bg-background">
+      <Header />
+      <div className="container mx-auto px-4 py-12 max-w-6xl">
       <div className="text-center mb-12">
         <h1 className="text-4xl font-bold mb-4">Contact Us</h1>
         <p className="text-xl text-muted-foreground">Get in touch with our team for support, questions, or feedback</p>
@@ -43,7 +47,7 @@ export default function ContactPage() {
               <Mail className="h-6 w-6 text-primary mt-1" />
               <div>
                 <h3 className="font-medium">Email</h3>
-                <p className="text-muted-foreground">support@limited.com</p>
+                <p className="text-muted-foreground">support@mixtas.com</p>
                 <p className="text-sm text-muted-foreground">We'll respond within 24 hours</p>
               </div>
             </div>
@@ -62,7 +66,7 @@ export default function ContactPage() {
               <div>
                 <h3 className="font-medium">Address</h3>
                 <p className="text-muted-foreground">
-                  123 Limited Street
+                  123 Fashion Avenue
                   <br />
                   New York, NY 10001
                   <br />
@@ -120,7 +124,8 @@ export default function ContactPage() {
                 <option value="">Select a subject</option>
                 <option value="order">Order Support</option>
                 <option value="product">Product Inquiry</option>
-                <option value="waitlist">Waitlist Question</option>
+                <option value="shipping">Shipping Question</option>
+                <option value="returns">Returns & Exchanges</option>
                 <option value="technical">Technical Issue</option>
                 <option value="other">Other</option>
               </select>
@@ -149,6 +154,9 @@ export default function ContactPage() {
           </form>
         </div>
       </div>
+      </div>
+      
+      <Footer />
     </div>
   )
 }

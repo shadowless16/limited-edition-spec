@@ -11,6 +11,7 @@ import { Package, Users, ShoppingCart, TrendingUp, Edit, Trash2 } from "lucide-r
 import OrderManagement from "@/components/OrderManagement"
 import { formatPrice } from "@/lib/pricing"
 import CreateProductModal from "@/components/admin/CreateProductModal"
+import WaitlistManagement from "@/components/admin/WaitlistManagement"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog"
 import BankTransferForm from "@/components/payment/BankTransferForm"
 import CryptoPaymentForm from "@/components/payment/CryptoPaymentForm"
@@ -368,45 +369,7 @@ export default function AdminDashboard() {
           </TabsContent>
 
           <TabsContent value="waitlist" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Waitlist Management</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {waitlistEntries.slice(0, 50).map((entry) => (
-                    <Dialog key={entry._id}>
-                      <DialogTrigger asChild>
-                        <div className="flex items-center justify-between p-4 border rounded-lg cursor-pointer hover:bg-muted/50">
-                          <div className="flex-1">
-                            <div className="flex items-center justify-between">
-                              <div>
-                                <p className="font-medium">{entry.email}</p>
-                                <p className="text-sm text-muted-foreground">Position #{entry.position} • {new Date(entry.createdAt).toLocaleDateString()}</p>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="ml-4">
-                            <Badge variant={entry.status === "active" ? "default" : "secondary"}>{entry.status}</Badge>
-                          </div>
-                        </div>
-                      </DialogTrigger>
-                      <DialogContent>
-                        <DialogHeader>
-                          <DialogTitle>Waitlist Entry Details</DialogTitle>
-                        </DialogHeader>
-                        <div className="space-y-4">
-                          <div><strong>Email:</strong> {entry.email}</div>
-                          <div><strong>Position:</strong> #{entry.position}</div>
-                          <div><strong>Status:</strong> {entry.status}</div>
-                          <div><strong>Joined:</strong> {new Date(entry.createdAt).toLocaleDateString()}</div>
-                        </div>
-                      </DialogContent>
-                    </Dialog>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+            <WaitlistManagement />
           </TabsContent>
 
           <TabsContent value="orders" className="space-y-4">
@@ -769,7 +732,7 @@ function PaymentMethodsManager() {
           details={{
             bitcoinAddress: editingMethod.details?.bitcoinAddress || editingMethod.details?.bitcoin_address || '',
             ethereumAddress: editingMethod.details?.ethereumAddress || editingMethod.details?.ethereum_address || '',
-            usdcAddress: editingMethod.details?.usdcAddress || editingMethod.details?.usdc_address || '',
+            ngncAddress: editingMethod.details?.ngncAddress || editingMethod.details?.ngnc_address || '',
             litecoinAddress: editingMethod.details?.litecoinAddress || editingMethod.details?.litecoin_address || '',
             instructions: editingMethod.details?.instructions || ''
           }}

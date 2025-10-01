@@ -2,14 +2,16 @@
 
 import { useState, useEffect } from "react"
 import Header from "@/components/layout/Header"
+import Footer from "@/components/layout/Footer"
 import ProductCard from "@/components/product/ProductCard"
 import { Button } from "@/components/ui/button"
-import { Filter, Search, SlidersHorizontal } from "lucide-react"
+import { Filter, Search, SlidersHorizontal, ShoppingBag } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
+import Link from "next/link"
 
 interface Product {
   _id: string
@@ -17,8 +19,7 @@ interface Product {
   sku: string
   basePrice: number
   images: string[]
-  currentPhase: "waitlist" | "originals" | "echo"
-  status: "active" | "paused" | "ended"
+  status: "waitlist" | "originals" | "echo" | "active" | "paused" | "ended"
   variants: Array<{
     color: string
     material: string
@@ -77,7 +78,7 @@ export default function ProductsPage() {
 
     // Phase filter
     if (selectedPhase !== "all") {
-      filtered = filtered.filter((product) => product.currentPhase === selectedPhase)
+      filtered = filtered.filter((product) => product.status === selectedPhase)
     }
 
     // Price range filter
@@ -114,9 +115,9 @@ export default function ProductsPage() {
   const getPhaseStats = () => {
     const stats = {
       all: products.length,
-      waitlist: products.filter((p) => p.currentPhase === "waitlist").length,
-      originals: products.filter((p) => p.currentPhase === "originals").length,
-      echo: products.filter((p) => p.currentPhase === "echo").length,
+      waitlist: products.filter((p) => p.status === "waitlist").length,
+      originals: products.filter((p) => p.status === "originals").length,
+      echo: products.filter((p) => p.status === "echo").length,
     }
     return stats
   }
@@ -158,11 +159,17 @@ export default function ProductsPage() {
 
       <div className="container max-w-6xl mx-auto px-4 py-8">
         {/* Page Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">All Products</h1>
-          <p className="text-muted-foreground">
-            Discover our exclusive limited-edition drops • {products.length} products available
-          </p>
+        <div className="mb-12 text-center">
+          <h1 className="text-4xl font-bold mb-6">Our Collections</h1>
+          
+          {/* Prepaid Production Messaging */}
+          <div className="max-w-3xl mx-auto mb-8 p-6 bg-accent/10 rounded-lg border">
+            <p className="text-lg font-medium mb-2">All Àníkẹ́ Bákàrè pieces are prepaid and made-to-order.</p>
+            <p className="text-muted-foreground mb-2">We only produce what you secure upfront.</p>
+            <p className="text-sm text-muted-foreground">No restocks, no overproduction — once it's gone, it's gone.</p>
+          </div>
+          
+
         </div>
 
         {/* Filters and Search */}
@@ -314,19 +321,84 @@ export default function ProductsPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredProducts.map((product) => (
-              <ProductCard
-                key={product._id}
-                product={{
-                  id: product._id,
-                  name: product.name,
-                  sku: product.sku,
-                  basePrice: product.basePrice,
-                  images: product.images,
-                  status: product.currentPhase,
-                  variants: product.variants,
-                }}
-                waitlistPosition={product.currentPhase === "waitlist" ? Math.floor(Math.random() * 100) + 1 : undefined}
-              />
+              <div key={product._id} className="group">
+                <div className="bg-card rounded-lg overflow-hidden border hover:shadow-lg transition-shadow">
+                  <Link href={`/product/${product._id}`}>
+                    <div className="aspect-square bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center relative">
+                      <div className="text-center text-muted-foreground">
+                        <div className="w-16 h-16 mx-auto mb-2 bg-muted-foreground/20 rounded-full flex items-center justify-center">
+                          <ShoppingBag className="w-8 h-8" />
+                        </div>
+                        <p className="text-sm">Product Image</p>
+                      </div>
+                      {product.status === "waitlist" && (
+                        <div className="absolute top-3 left-3">
+                          <Badge variant="secondary" className="bg-accent text-accent-foreground text-xs">
+                            Waitlist
+                          </Badge>
+                        </div>
+                      )}
+                      {product.status === "originals" && (
+                        <div className="absolute top-3 left-3">
+                          <Badge className="bg-primary text-primary-foreground text-xs">
+                            Available
+                          </Badge>
+                        </div>
+                      )}
+                      {product.status === "echo" && (
+                        <div className="absolute top-3 left-3">
+                          <Badge variant="outline" className="text-xs">
+                            Echo
+                          </Badge>
+                        </div>
+                      )}
+                    </div>
+                  </Link>
+                  
+                  <div className="p-4 space-y-3">
+                    <div className="text-center">
+                      <h3 className="font-medium text-base mb-1">{product.name}</h3>
+                      <p className="text-lg font-bold">₦{(product.basePrice / 100).toFixed(0)}</p>
+                      {product.status === "originals" && (
+                        <div className="flex justify-center mt-1">
+                          <div className="flex">
+                            {[1,2,3,4,5].map((star) => (
+                              <svg key={star} className="w-3 h-3 text-primary fill-current" viewBox="0 0 20 20">
+                                <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/>
+                              </svg>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* Action Buttons */}
+                    {product.status === "waitlist" && (
+                      <Button className="w-full" size="sm" asChild>
+                        <Link href={`/product/${product._id}`}>
+                          Join Waitlist
+                        </Link>
+                      </Button>
+                    )}
+                    
+                    {product.status === "originals" && (
+                      <Button className="w-full" size="sm" asChild>
+                        <Link href={`/product/${product._id}`}>
+                          Buy Now
+                        </Link>
+                      </Button>
+                    )}
+                    
+                    {product.status === "echo" && (
+                      <Button variant="outline" className="w-full" size="sm" asChild>
+                        <Link href={`/product/${product._id}`}>
+                          Request Echo
+                        </Link>
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </div>
             ))}
           </div>
         )}
@@ -340,6 +412,8 @@ export default function ProductsPage() {
           </div>
         )}
       </div>
+      
+      <Footer />
     </div>
   )
 }

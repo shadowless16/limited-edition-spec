@@ -5,10 +5,11 @@ export interface COAData {
   productName: string
   productId: string
   serialNumber: string
+  pieceNumber: number
   purchaseDate: Date
   customerName: string
   customerEmail: string
-  phase: "originals" | "echo"
+  phase: "originals" | "echo" | "press"
   authenticity: {
     signature: string
     timestamp: string
@@ -31,29 +32,31 @@ export class COAGenerator {
   }
 
   static async generateCOA(orderId: string): Promise<COAData> {
-    // This would typically fetch from database
-    const order = await Order.findById(orderId).populate("productId userId")
+    const order = await Order.findById(orderId).populate("items.productId userId")
     if (!order) throw new Error("Order not found")
 
-    const product = order.productId as any
     const user = order.userId as any
+    const firstItem = order.items[0]
+    const product = firstItem.productId as any
 
-    // Get order number for this product (for serial numbering)
-    const orderCount = await Order.countDocuments({
-      productId: product._id,
-      status: "completed",
+    // Get piece number based on confirmed payment order (prepaid model)
+    const pieceNumber = await Order.countDocuments({
+      "items.productId": product._id,
+      paymentStatus: "paid",
+      phase: order.phase,
       createdAt: { $lte: order.createdAt },
     })
 
-    const serialNumber = this.generateSerialNumber(product._id.toString(), orderCount, order.phase)
+    const serialNumber = this.generateSerialNumber(product._id.toString(), pieceNumber, order.phase)
 
     const coaData: COAData = {
       orderId: order._id.toString(),
       productName: product.name,
       productId: product._id.toString(),
       serialNumber,
+      pieceNumber,
       purchaseDate: order.createdAt,
-      customerName: user.name,
+      customerName: `${user.firstName} ${user.lastName}`,
       customerEmail: user.email,
       phase: order.phase,
       authenticity: {
@@ -72,16 +75,15 @@ export class COAGenerator {
   }
 
   static generateCOAPDF(coaData: COAData): string {
-    // In production, this would generate an actual PDF using libraries like jsPDF or Puppeteer
-    // For now, return a formatted text representation
     return `
-CERTIFICATE OF AUTHENTICITY
+ÀNÍKẸ́ BÁKÀRÈ - CERTIFICATE OF AUTHENTICITY
 
 Product: ${coaData.productName}
 Serial Number: ${coaData.serialNumber}
-Phase: ${coaData.phase.toUpperCase()}
+Piece Number: ${coaData.pieceNumber}
+Edition: ${coaData.phase.toUpperCase()}
 
-Customer: ${coaData.customerName}
+Owner: ${coaData.customerName}
 Email: ${coaData.customerEmail}
 Purchase Date: ${coaData.purchaseDate.toLocaleDateString()}
 
@@ -90,7 +92,14 @@ Hash: ${coaData.authenticity.hash}
 Timestamp: ${coaData.authenticity.timestamp}
 Status: ${coaData.authenticity.signature}
 
-This certificate verifies the authenticity of your limited edition purchase.
+This certificate verifies the authenticity of your limited edition piece.
+Prepaid and made-to-order - no overproduction.
     `.trim()
   }
+}
+
+// Export convenience function
+export async function generateCOA(orderId: string, userId: string, items: any[]): Promise<string> {
+  const coaData = await COAGenerator.generateCOA(orderId)
+  return coaData.serialNumber
 }

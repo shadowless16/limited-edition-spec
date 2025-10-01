@@ -35,8 +35,8 @@ export async function POST(request: NextRequest) {
     // TODO: Initialize Stripe and create payment intent
     // const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
     // const paymentIntent = await stripe.paymentIntents.create({
-    //   amount: order.totalAmount * 100, // Convert to cents
-    //   currency: 'usd',
+    //   amount: order.totalAmount * 100, // Convert to kobo
+    //   currency: 'ngn',
     //   metadata: {
     //     orderId: order._id.toString(),
     //     userId: user.id

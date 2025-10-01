@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from "react"
 import Header from "@/components/layout/Header"
+import Footer from "@/components/layout/Footer"
 import ProductCard from "@/components/product/ProductCard"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import { ArrowRight, Sparkles } from "lucide-react"
 import Link from "next/link"
 
@@ -13,8 +15,7 @@ interface Product {
   sku: string
   basePrice: number
   images: string[]
-  currentPhase: "waitlist" | "originals" | "echo"
-  status: "active" | "paused" | "ended"
+  status: "waitlist" | "originals" | "echo" | "active" | "paused" | "ended"
   variants: Array<{
     color: string
     material: string
@@ -49,8 +50,8 @@ export default function HomePage() {
           sku: "AB-B1-BG1",
           basePrice: 29900,
           images: ["/premium-leather-bag.png"],
-          currentPhase: "originals" as const,
-          status: "active" as const,
+
+          status: "originals" as const,
           variants: [
             { color: "black", material: "leather", stock: 8 },
             { color: "brown", material: "leather", stock: 5 },
@@ -63,8 +64,8 @@ export default function HomePage() {
           sku: "MW-S2-SL1",
           basePrice: 45900,
           images: ["/minimalist-luxury-watch.png"],
-          currentPhase: "waitlist" as const,
-          status: "active" as const,
+
+          status: "waitlist" as const,
           variants: [
             { color: "silver", material: "steel", stock: 25 },
             { color: "black", material: "steel", stock: 20 },
@@ -76,8 +77,8 @@ export default function HomePage() {
           sku: "CV-A3-WH1",
           basePrice: 18900,
           images: ["/modern-ceramic-vase-set.png"],
-          currentPhase: "echo" as const,
-          status: "active" as const,
+
+          status: "echo" as const,
           variants: [
             { color: "white", material: "ceramic", stock: 3 },
             { color: "black", material: "ceramic", stock: 1 },
@@ -94,49 +95,75 @@ export default function HomePage() {
       <Header />
 
       {/* Hero Section */}
-      <section className="relative py-20 px-4 text-center bg-gradient-to-b from-background to-muted/20">
-        <div className="container max-w-4xl mx-auto space-y-6">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/10 text-accent text-sm font-medium">
-            <Sparkles className="h-4 w-4" />
-            Limited Edition Drops
+      <section className="relative min-h-[80vh] flex items-center justify-between px-4 bg-gradient-to-br from-background via-background to-muted/30">
+        <div className="container max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          {/* Left Content */}
+          <div className="space-y-8 text-left">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/20 text-accent text-sm font-medium uppercase tracking-wide">
+              Urban Edge
+            </div>
+
+            <div className="space-y-4">
+              <h1 className="text-5xl md:text-7xl font-bold leading-tight">
+                Àníkẹ́ Bákàrè
+                <br />
+                <span className="text-primary">Limited Editions</span>
+              </h1>
+              <p className="text-xl text-muted-foreground max-w-lg">
+                Prepaid. Made-to-order. No overproduction.
+                <br />
+                <span className="font-medium">Secure your piece before it's gone forever.</span>
+              </p>
+            </div>
+
+            <div className="pt-4">
+              <Button size="lg" className="px-8 py-3 text-base font-medium" asChild>
+                <Link href="/products">
+                  Discover Now
+                </Link>
+              </Button>
+            </div>
           </div>
 
-          <h1 className="text-4xl md:text-6xl font-bold text-balance leading-tight">
-            Exclusive Products,
-            <br />
-            <span className="text-primary">Limited Quantities</span>
-          </h1>
-
-          <p className="text-lg text-muted-foreground text-pretty max-w-2xl mx-auto">
-            Join our exclusive drops for handcrafted, limited-edition products. From waitlist to originals to echo
-            phases - secure your piece of exclusivity.
-          </p>
-
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4">
-            <Button size="lg" className="min-w-[200px]" asChild>
-              <Link href="/products">
-                View Current Drops
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
-            <Button variant="outline" size="lg" className="min-w-[200px] bg-transparent" asChild>
-              <Link href="/how-it-works">How It Works</Link>
-            </Button>
+          {/* Right Content - Hero Image */}
+          <div className="relative h-[600px] lg:h-[700px]">
+            <div className="absolute inset-0 bg-gradient-to-t from-background/20 to-transparent rounded-2xl overflow-hidden">
+              <div className="w-full h-full bg-gradient-to-br from-primary/10 to-accent/20 flex items-center justify-center">
+                <div className="text-center text-muted-foreground">
+                  <div className="w-32 h-32 mx-auto mb-4 bg-muted rounded-full flex items-center justify-center">
+                    <Sparkles className="w-16 h-16" />
+                  </div>
+                  <p className="text-lg">Hero Product Image</p>
+                </div>
+              </div>
+            </div>
+            
+            {/* Navigation Arrows */}
+            <button className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-background/80 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-background transition-colors">
+              <ArrowRight className="w-5 h-5 rotate-180" />
+            </button>
+            <button className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-background/80 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-background transition-colors">
+              <ArrowRight className="w-5 h-5" />
+            </button>
           </div>
         </div>
       </section>
 
-      {/* Featured Products */}
-      <section className="py-16 px-4">
-        <div className="container max-w-6xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">Current Drops</h2>
-            <p className="text-muted-foreground text-lg">Limited quantities, premium quality, exclusive access</p>
+      {/* New Arrivals Section */}
+      <section className="py-20 px-4 bg-muted/20">
+        <div className="container max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold mb-6">New Arrivals</h2>
+            <p className="text-muted-foreground mb-8 max-w-2xl mx-auto">
+              Each piece is made only after you pay. Production begins when you secure your order.
+            </p>
+            
+
           </div>
 
           {isLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[...Array(3)].map((_, i) => (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              {[...Array(8)].map((_, i) => (
                 <div key={i} className="animate-pulse">
                   <div className="aspect-square bg-muted rounded-lg mb-4"></div>
                   <div className="h-4 bg-muted rounded w-3/4 mb-2"></div>
@@ -145,66 +172,158 @@ export default function HomePage() {
               ))}
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {featuredProducts.map((product) => (
-                <ProductCard
-                  key={product._id}
-                  product={{
-                    id: product._id,
-                    name: product.name,
-                    sku: product.sku,
-                    basePrice: product.basePrice,
-                    images: product.images,
-                    status: product.currentPhase,
-                    variants: product.variants,
-                    launchDate: product.launchDate,
-                  }}
-                  waitlistPosition={product.currentPhase === "waitlist" ? 47 : undefined}
-                />
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              {featuredProducts.concat(featuredProducts).slice(0, 8).map((product, index) => (
+                <div key={`${product._id}-${index}`} className="group">
+                  <div className="bg-card rounded-lg overflow-hidden border hover:shadow-lg transition-shadow">
+                    <Link href={`/product/${product._id}`}>
+                      <div className="aspect-square bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center relative">
+                        <div className="text-center text-muted-foreground">
+                          <div className="w-16 h-16 mx-auto mb-2 bg-muted-foreground/20 rounded-full flex items-center justify-center">
+                            <Sparkles className="w-8 h-8" />
+                          </div>
+                          <p className="text-sm">Product</p>
+                        </div>
+                        {product.status === "waitlist" && (
+                          <div className="absolute top-3 left-3">
+                            <Badge variant="secondary" className="bg-accent text-accent-foreground text-xs">
+                              Waitlist
+                            </Badge>
+                          </div>
+                        )}
+                        {product.status === "originals" && (
+                          <div className="absolute top-3 left-3">
+                            <Badge className="bg-primary text-primary-foreground text-xs">
+                              Available
+                            </Badge>
+                          </div>
+                        )}
+                      </div>
+                    </Link>
+                    
+                    <div className="p-3 space-y-2">
+                      <div className="text-center">
+                        <h3 className="font-medium text-sm mb-1">{product.name}</h3>
+                        <p className="text-sm font-bold">₦{(product.basePrice / 100).toFixed(0)}</p>
+                      </div>
+                      
+                      {/* Quick Action Button */}
+                      {product.status === "waitlist" && (
+                        <Button className="w-full" size="sm" asChild>
+                          <Link href={`/product/${product._id}`}>
+                            Join Waitlist
+                          </Link>
+                        </Button>
+                      )}
+                      
+                      {product.status === "originals" && (
+                        <Button className="w-full" size="sm" asChild>
+                          <Link href={`/product/${product._id}`}>
+                            Buy Now
+                          </Link>
+                        </Button>
+                      )}
+                      
+                      {product.status === "echo" && (
+                        <Button variant="outline" className="w-full" size="sm" asChild>
+                          <Link href={`/product/${product._id}`}>
+                            Request
+                          </Link>
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </div>
               ))}
             </div>
           )}
         </div>
       </section>
 
-      {/* How It Works */}
-      <section className="py-16 px-4 bg-muted/30">
-        <div className="container max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl font-bold mb-12">How Limited Drops Work</h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="space-y-4">
-              <div className="w-12 h-12 rounded-full bg-accent text-accent-foreground flex items-center justify-center font-bold text-lg mx-auto">
-                1
+      {/* Featured Collections */}
+      <section className="py-20 px-4">
+        <div className="container max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* Left Collection */}
+            <div className="relative h-[500px] rounded-2xl overflow-hidden group cursor-pointer">
+              <div className="absolute inset-0 bg-gradient-to-br from-muted to-muted/80 flex items-center justify-center">
+                <div className="text-center text-muted-foreground">
+                  <div className="w-24 h-24 mx-auto mb-4 bg-muted-foreground/20 rounded-full flex items-center justify-center">
+                    <Sparkles className="w-12 h-12" />
+                  </div>
+                  <p className="text-lg">Collection Image</p>
+                </div>
               </div>
-              <h3 className="text-xl font-semibold">Waitlist Phase</h3>
-              <p className="text-muted-foreground">
-                Join the waitlist early to secure your spot. Get notified when the originals phase begins.
-              </p>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+              <div className="absolute bottom-8 left-8 text-white">
+                <p className="text-sm font-medium mb-2 uppercase tracking-wide">Ethical Elegance</p>
+                <h3 className="text-3xl font-bold mb-4">Where Dreams<br />Meet Couture</h3>
+                <Button variant="outline" className="bg-white/10 border-white/30 text-white hover:bg-white hover:text-black">
+                  Shop Now
+                </Button>
+              </div>
             </div>
 
-            <div className="space-y-4">
-              <div className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-lg mx-auto">
-                2
+            {/* Right Collection */}
+            <div className="relative h-[500px] rounded-2xl overflow-hidden group cursor-pointer">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-accent/30 flex items-center justify-center">
+                <div className="text-center text-muted-foreground">
+                  <div className="w-24 h-24 mx-auto mb-4 bg-muted-foreground/20 rounded-full flex items-center justify-center">
+                    <Sparkles className="w-12 h-12" />
+                  </div>
+                  <p className="text-lg">Collection Image</p>
+                </div>
               </div>
-              <h3 className="text-xl font-semibold">Originals Phase</h3>
-              <p className="text-muted-foreground">
-                Limited quantities available with early bird pricing. First come, first served basis.
-              </p>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+              <div className="absolute bottom-8 left-8 text-white">
+                <p className="text-sm font-medium mb-2 uppercase tracking-wide">Modern Royalty</p>
+                <h3 className="text-3xl font-bold mb-4">Enchanting Styles<br />for Every Woman</h3>
+                <Button variant="outline" className="bg-white/10 border-white/30 text-white hover:bg-white hover:text-black">
+                  Shop Now
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom Collections */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
+            {/* Urban Streetwear */}
+            <div className="relative h-[300px] rounded-2xl overflow-hidden group cursor-pointer">
+              <div className="absolute inset-0 bg-gradient-to-br from-accent/30 to-secondary/40 flex items-center justify-center">
+                <div className="text-center text-muted-foreground">
+                  <div className="w-16 h-16 mx-auto mb-2 bg-muted-foreground/20 rounded-full flex items-center justify-center">
+                    <Sparkles className="w-8 h-8" />
+                  </div>
+                  <p className="text-sm">Footwear</p>
+                </div>
+              </div>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+              <div className="absolute bottom-6 left-6 text-white">
+                <p className="text-xs font-medium mb-1 uppercase tracking-wide">Urban Streetwear</p>
+                <h3 className="text-xl font-bold mb-2">Chic Footwear for<br />City Living</h3>
+                <Button size="sm" variant="outline" className="bg-white/10 border-white/30 text-white hover:bg-white hover:text-black text-xs">
+                  Shop Now
+                </Button>
+              </div>
             </div>
 
-            <div className="space-y-4">
-              <div className="w-12 h-12 rounded-full bg-secondary text-secondary-foreground flex items-center justify-center font-bold text-lg mx-auto">
-                3
+            {/* Trendsetting Bags */}
+            <div className="relative h-[300px] rounded-2xl overflow-hidden group cursor-pointer bg-primary">
+              <div className="absolute inset-0 flex items-center justify-center text-white">
+                <div className="text-center">
+                  <h3 className="text-4xl font-bold mb-4">Trendsetting Bags for Her</h3>
+                  <div className="text-6xl font-bold mb-4">50<span className="text-2xl">%</span></div>
+                  <Button className="bg-white text-primary hover:bg-white/90">
+                    Shop Now
+                  </Button>
+                </div>
               </div>
-              <h3 className="text-xl font-semibold">Echo Phase</h3>
-              <p className="text-muted-foreground">
-                Missed out? Request specific variants in the echo phase with escrow protection.
-              </p>
             </div>
           </div>
         </div>
       </section>
+      
+      <Footer />
     </div>
   )
 }

@@ -4,7 +4,7 @@ import { Order } from "@/models/Order"
 import { Product } from "@/models/Product"
 import { verifyToken } from "@/lib/auth"
 
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const token = request.headers.get("authorization")?.replace("Bearer ", "")
     if (!token) {

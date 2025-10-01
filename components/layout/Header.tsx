@@ -12,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import AuthModal from "@/components/auth/AuthModal"
+import PhoneDisplay from "@/components/PhoneDisplay"
 
 interface UserInterface {
   id: string
@@ -90,22 +91,24 @@ export default function Header() {
           </Button>
 
           <Link href="/" className="flex items-center space-x-2">
-            <div className="h-8 w-8 rounded-full bg-primary" />
-            <span className="font-bold text-xl">LIMITED</span>
+            <span className="font-bold text-2xl tracking-wide">Àníkẹ́ Bákàrè</span>
           </Link>
 
-          <nav className="hidden md:flex items-center space-x-6">
+          <nav className="hidden md:flex items-center space-x-8">
+            <Link href="/" className="text-sm font-medium hover:text-primary transition-colors">
+              Home
+            </Link>
             <Link href="/products" className="text-sm font-medium hover:text-primary transition-colors">
-              Products
+              Shop
             </Link>
-            <Link href="/waitlist" className="text-sm font-medium hover:text-primary transition-colors">
-              Waitlist
-            </Link>
-            <Link href="/how-it-works" className="text-sm font-medium hover:text-primary transition-colors">
-              How It Works
+            <Link href="/products" className="text-sm font-medium hover:text-primary transition-colors">
+              Pages
             </Link>
             <Link href="/about" className="text-sm font-medium hover:text-primary transition-colors">
               About
+            </Link>
+            <Link href="/contact" className="text-sm font-medium hover:text-primary transition-colors">
+              Contact Us
             </Link>
             {user?.role === "admin" && (
               <Link href="/admin" className="text-sm font-medium hover:text-primary transition-colors">
@@ -114,20 +117,39 @@ export default function Header() {
             )}
           </nav>
 
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-4">
+            <div className="hidden lg:block">
+              <PhoneDisplay format="whatsapp" className="text-sm text-muted-foreground hover:text-primary" />
+            </div>
+            
+            <Button variant="ghost" size="sm">
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </Button>
+            
+            <Button variant="ghost" size="sm">
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+              </svg>
+            </Button>
+            
             <Button variant="ghost" size="sm" asChild>
-              <Link href="/cart">
+              <Link href="/cart" className="relative">
                 <ShoppingBag className="h-5 w-5" />
-                <span className="ml-1 text-sm">{cartCount}</span>
+                {cartCount > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-primary text-primary-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                    {cartCount}
+                  </span>
+                )}
               </Link>
             </Button>
 
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm">
-                    <User className="h-4 w-4 mr-1" />
-                    {user.name}
+                  <Button variant="ghost" size="sm">
+                    <User className="h-5 w-5" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
@@ -148,8 +170,8 @@ export default function Header() {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <Button variant="outline" size="sm" onClick={() => setIsAuthModalOpen(true)}>
-                Sign In
+              <Button variant="ghost" size="sm" onClick={() => setIsAuthModalOpen(true)}>
+                <User className="h-5 w-5" />
               </Button>
             )}
           </div>
@@ -159,25 +181,25 @@ export default function Header() {
           <div className="md:hidden border-t bg-background">
             <nav className="container py-4 px-4 space-y-3">
               <Link
+                href="/"
+                className="block py-2 text-sm font-medium hover:text-primary transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Home
+              </Link>
+              <Link
                 href="/products"
                 className="block py-2 text-sm font-medium hover:text-primary transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
-                Products
+                Shop
               </Link>
               <Link
-                href="/waitlist"
+                href="/products"
                 className="block py-2 text-sm font-medium hover:text-primary transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
-                Waitlist
-              </Link>
-              <Link
-                href="/how-it-works"
-                className="block py-2 text-sm font-medium hover:text-primary transition-colors"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                How It Works
+                Pages
               </Link>
               <Link
                 href="/about"
@@ -185,6 +207,13 @@ export default function Header() {
                 onClick={() => setIsMenuOpen(false)}
               >
                 About
+              </Link>
+              <Link
+                href="/contact"
+                className="block py-2 text-sm font-medium hover:text-primary transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Contact Us
               </Link>
               {user?.role === "admin" && (
                 <Link
