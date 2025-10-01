@@ -15,6 +15,7 @@ import WaitlistManagement from "@/components/admin/WaitlistManagement"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog"
 import BankTransferForm from "@/components/payment/BankTransferForm"
 import CryptoPaymentForm from "@/components/payment/CryptoPaymentForm"
+import ImageUpload from "@/components/admin/ImageUpload"
 
 interface Product {
   _id: string
@@ -885,19 +886,7 @@ function SettingsPanel() {
   if (loading) return <div>Loading settings...</div>
   if (error) return <div className="text-red-600">Error: {error}</div>
 
-  const addHeroImage = () => {
-    setHeroImages([...heroImages, ''])
-  }
 
-  const updateHeroImage = (index: number, url: string) => {
-    const updated = [...heroImages]
-    updated[index] = url
-    setHeroImages(updated)
-  }
-
-  const removeHeroImage = (index: number) => {
-    setHeroImages(heroImages.filter((_, i) => i !== index))
-  }
 
   return (
     <div className="space-y-6">
@@ -913,26 +902,12 @@ function SettingsPanel() {
       </div>
       
       <div>
-        <div className="flex items-center justify-between mb-3">
-          <label className="text-sm font-medium">Hero Images</label>
-          <Button size="sm" onClick={addHeroImage}>Add Image</Button>
-        </div>
-        <div className="space-y-3">
-          {heroImages.map((url, index) => (
-            <div key={index} className="flex gap-2">
-              <UIInput 
-                value={url} 
-                onChange={(e) => updateHeroImage(index, e.target.value)} 
-                placeholder="Image URL" 
-                className="flex-1"
-              />
-              <Button size="sm" variant="outline" onClick={() => removeHeroImage(index)}>Remove</Button>
-            </div>
-          ))}
-          {heroImages.length === 0 && (
-            <p className="text-sm text-muted-foreground">No hero images configured. Add images to display in the homepage carousel.</p>
-          )}
-        </div>
+        <label className="text-sm font-medium block mb-3">Hero Images</label>
+        <ImageUpload 
+          images={heroImages} 
+          onImagesChange={setHeroImages} 
+          maxImages={10}
+        />
       </div>
       
       <div className="flex justify-end">

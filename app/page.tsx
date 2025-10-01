@@ -31,7 +31,7 @@ function HeroImageCarousel() {
   useEffect(() => {
     ;(async () => {
       try {
-        const resp = await fetch('/api/admin/settings')
+        const resp = await fetch('/api/settings/public')
         if (resp.ok) {
           const data = await resp.json()
           if (data.heroImages && Array.isArray(data.heroImages)) {

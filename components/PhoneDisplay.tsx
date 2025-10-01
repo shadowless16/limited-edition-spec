@@ -19,10 +19,10 @@ export default function PhoneDisplay({ className = "", showIcon = true, format =
 
   const fetchPhoneNumber = async () => {
     try {
-      const response = await fetch("/api/settings/phone")
+      const response = await fetch("/api/settings/public")
       if (response.ok) {
         const data = await response.json()
-        setPhoneNumber(data.phoneNumber || "+2348000000000")
+        setPhoneNumber(data.whatsappNumber || "+2348000000000")
       }
     } catch (error) {
       console.error("Error fetching phone number:", error)
