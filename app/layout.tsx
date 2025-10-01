@@ -6,7 +6,7 @@ import { Toaster } from '@/components/ui/toaster'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Mixtas - Premium Fashion',
+  title: 'Àníkẹ́ Bákàrè - Premium Fashion',
 }
 
 export default function RootLayout({
