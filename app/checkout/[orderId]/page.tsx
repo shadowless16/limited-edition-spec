@@ -166,13 +166,13 @@ export default function CheckoutPage() {
                       <p className="font-medium">{item.productId.name}</p>
                       <p className="text-sm text-muted-foreground">Qty: {item.quantity}</p>
                     </div>
-                    <p className="font-medium">${(item.totalPrice / 100).toFixed(2)}</p>
+                    <p className="font-medium">₦{(item.totalPrice / 100).toFixed(2)}</p>
                   </div>
                 ))}
                 <div className="border-t pt-4">
                   <div className="flex justify-between font-bold text-lg">
                     <span>Total</span>
-                    <span>${(order.total / 100).toFixed(2)}</span>
+                    <span>₦{(order.total / 100).toFixed(2)}</span>
                   </div>
                 </div>
               </CardContent>

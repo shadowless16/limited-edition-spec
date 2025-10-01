@@ -523,6 +523,22 @@ export default function ProductDetail({ product, user }: ProductDetailProps) {
                 </div>
               )}
             </div>
+            
+            {/* Image Thumbnails */}
+            {product.images && product.images.length > 1 && (
+              <div className="flex gap-2 overflow-x-auto">
+                {product.images.map((image, index) => (
+                  <div key={index} className="flex-shrink-0 w-20 h-20 relative rounded-lg overflow-hidden bg-muted cursor-pointer border-2 border-transparent hover:border-primary">
+                    <Image
+                      src={image}
+                      alt={`${product.name} ${index + 1}`}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Product Info */}

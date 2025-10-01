@@ -22,7 +22,29 @@ export default function OrderConfirmationPage() {
         if (!resp.ok) {
           setOrder(null)
         } else {
-          setOrder(await resp.json())
+          const orderData = await resp.json()
+          setOrder(orderData)
+          
+          // Auto-download PDF invoice
+          setTimeout(async () => {
+            try {
+              const token = localStorage.getItem('token')
+              const pdfResp = await fetch(`/api/orders/${orderData._id}/invoice_pdf`, { headers: { Authorization: `Bearer ${token}` } })
+              if (pdfResp.ok && pdfResp.headers.get('content-type')?.includes('application/pdf')) {
+                const blob = await pdfResp.blob()
+                const url = window.URL.createObjectURL(blob)
+                const a = document.createElement('a')
+                a.href = url
+                a.download = `invoice-${orderData.orderNumber}.pdf`
+                document.body.appendChild(a)
+                a.click()
+                a.remove()
+                window.URL.revokeObjectURL(url)
+              }
+            } catch (e) {
+              console.log('Auto PDF download failed:', e)
+            }
+          }, 1000)
         }
       } catch (e) {
         setOrder(null)
@@ -64,23 +86,26 @@ export default function OrderConfirmationPage() {
                     <div className="font-medium">{it.productId?.name}</div>
                     <div className="text-sm text-muted-foreground">Qty: {it.quantity}</div>
                   </div>
-                  <div className="font-medium">${(it.totalPrice / 100).toFixed(2)}</div>
+                  <div className="font-medium">₦{(it.totalPrice / 100).toFixed(2)}</div>
                 </div>
               ))}
 
-              <div className="border-t pt-4 flex justify-between font-bold">Total <span>${(order.total / 100).toFixed(2)}</span></div>
+              <div className="border-t pt-4 flex justify-between font-bold">Total <span>₦{(order.total / 100).toFixed(2)}</span></div>
 
               <div className="pt-4">
                 <div className="flex flex-col md:flex-row md:items-center md:gap-4">
-                  <div className="flex gap-2 items-center">
-                    <Button onClick={() => router.push('/products')}>Continue Shopping</Button>
-                    <div className="flex items-center gap-2">
-                      <input id="waConfirm" type="checkbox" checked={waConfirmed} onChange={(e) => setWaConfirmed((e.target as HTMLInputElement).checked)} />
-                      <label htmlFor="waConfirm" className="text-sm">I confirm my order and will send payment confirmation via WhatsApp</label>
+                  <div className="space-y-4">
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <input id="waConfirm" type="checkbox" checked={waConfirmed} onChange={(e) => setWaConfirmed((e.target as HTMLInputElement).checked)} className="w-4 h-4" />
+                        <label htmlFor="waConfirm" className="font-bold text-lg text-yellow-800">IMPORTANT: You must confirm your order via WhatsApp to complete the purchase</label>
+                      </div>
+                      <p className="text-sm text-yellow-700 ml-6">Check this box to acknowledge that you will send payment confirmation through WhatsApp</p>
                     </div>
+                    <Button onClick={() => router.push('/products')}>Continue Shopping</Button>
                   </div>
 
-                  <div className="flex gap-2 mt-3 md:mt-0">
+                  <div className="flex gap-2">
                     <Button onClick={async () => {
                       try {
                         const token = localStorage.getItem('token')

@@ -434,9 +434,13 @@ export default function CreateProductModal({ onProductCreated, product, onProduc
                       <Label>Stock</Label>
                       <Input
                         type="number"
-                        value={variant.stock}
-                        onChange={(e) => updateVariant(index, "stock", Number.parseInt(e.target.value) || 0)}
+                        value={variant.stock === 0 ? "" : variant.stock}
+                        onChange={(e) => {
+                          const value = e.target.value
+                          updateVariant(index, "stock", value === "" ? 0 : Number.parseInt(value) || 0)
+                        }}
                         min="0"
+                        placeholder="0"
                       />
                     </div>
                     <div className="flex items-end">

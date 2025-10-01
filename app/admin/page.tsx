@@ -820,6 +820,7 @@ function PaymentMethodsManager() {
 function SettingsPanel() {
   const [whatsappNumber, setWhatsappNumber] = useState<string>('')
   const [brandColor, setBrandColor] = useState<string>('#6b3d2e')
+  const [heroImages, setHeroImages] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string>('')
 
@@ -846,6 +847,7 @@ function SettingsPanel() {
         const data = await resp.json()
         if (data.whatsappNumber) setWhatsappNumber(data.whatsappNumber)
         if (data.brandColor) setBrandColor(data.brandColor)
+        if (data.heroImages) setHeroImages(data.heroImages)
         setError('')
       } catch (e) {
         console.error(e)
@@ -866,7 +868,7 @@ function SettingsPanel() {
       const resp = await fetch('/api/admin/settings', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ whatsappNumber, brandColor }),
+        body: JSON.stringify({ whatsappNumber, brandColor, heroImages }),
       })
       if (!resp.ok) {
         const errorData = await resp.json().catch(() => ({}))
@@ -883,8 +885,22 @@ function SettingsPanel() {
   if (loading) return <div>Loading settings...</div>
   if (error) return <div className="text-red-600">Error: {error}</div>
 
+  const addHeroImage = () => {
+    setHeroImages([...heroImages, ''])
+  }
+
+  const updateHeroImage = (index: number, url: string) => {
+    const updated = [...heroImages]
+    updated[index] = url
+    setHeroImages(updated)
+  }
+
+  const removeHeroImage = (index: number) => {
+    setHeroImages(heroImages.filter((_, i) => i !== index))
+  }
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label className="text-sm block mb-1">WhatsApp Number (E.164)</label>
@@ -895,6 +911,30 @@ function SettingsPanel() {
           <UIInput value={brandColor} onChange={(e) => setBrandColor(e.target.value)} placeholder="#6b3d2e" />
         </div>
       </div>
+      
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <label className="text-sm font-medium">Hero Images</label>
+          <Button size="sm" onClick={addHeroImage}>Add Image</Button>
+        </div>
+        <div className="space-y-3">
+          {heroImages.map((url, index) => (
+            <div key={index} className="flex gap-2">
+              <UIInput 
+                value={url} 
+                onChange={(e) => updateHeroImage(index, e.target.value)} 
+                placeholder="Image URL" 
+                className="flex-1"
+              />
+              <Button size="sm" variant="outline" onClick={() => removeHeroImage(index)}>Remove</Button>
+            </div>
+          ))}
+          {heroImages.length === 0 && (
+            <p className="text-sm text-muted-foreground">No hero images configured. Add images to display in the homepage carousel.</p>
+          )}
+        </div>
+      </div>
+      
       <div className="flex justify-end">
         <Button onClick={save}>Save Settings</Button>
       </div>

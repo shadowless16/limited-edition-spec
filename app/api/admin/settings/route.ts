@@ -10,7 +10,7 @@ export async function GET(request: Request) {
   if (!user || (user as any).role !== 'admin') return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
 
   await connectToDatabase()
-  const keys = ['whatsappNumber', 'brandColor']
+  const keys = ['whatsappNumber', 'brandColor', 'heroImages']
   const docs = await Settings.find({ key: { $in: keys } }).lean()
   const result: any = {}
   docs.forEach((d: any) => { result[d.key] = d.value })
@@ -28,6 +28,7 @@ export async function PATCH(request: Request) {
   const upserts: any = {}
   if (body.whatsappNumber !== undefined) upserts.whatsappNumber = body.whatsappNumber
   if (body.brandColor !== undefined) upserts.brandColor = body.brandColor
+  if (body.heroImages !== undefined) upserts.heroImages = body.heroImages
 
   const entries = Object.entries(upserts)
   for (const [key, value] of entries) {

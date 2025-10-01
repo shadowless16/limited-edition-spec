@@ -692,33 +692,51 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       timeout: 60000
     }
     
-    if (process.env.NODE_ENV === 'development' && process.platform === 'win32') {
+    // Use system Chrome in production, fallback to bundled Chromium
+    if (process.env.NODE_ENV === 'production') {
+      // Try common Chrome/Chromium paths
+      const chromePaths = [
+        '/usr/bin/google-chrome-stable',
+        '/usr/bin/google-chrome',
+        '/usr/bin/chromium-browser',
+        '/usr/bin/chromium'
+      ]
+      
+      for (const path of chromePaths) {
+        try {
+          const fs = require('fs')
+          if (fs.existsSync(path)) {
+            launchOptions.executablePath = path
+            break
+          }
+        } catch (e) {
+          // Continue to next path
+        }
+      }
+    } else if (process.platform === 'win32') {
       launchOptions.executablePath = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe'
     }
     
-    const browser = await puppeteer.launch(launchOptions)
-    const page = await browser.newPage()
-    
-    // Set content with longer timeout and simpler wait condition
-    await page.setContent(html, { waitUntil: 'domcontentloaded', timeout: 30000 })
-    
-    // Generate PDF
-    const pdfBuffer = await page.pdf({ 
-      format: 'A4', 
-      printBackground: true, 
-      margin: { top: '20px', bottom: '20px', left: '20px', right: '20px' },
-      preferCSSPageSize: true
-    })
-    
-    await browser.close()
-    
-    return new NextResponse(new Uint8Array(pdfBuffer), { 
-      status: 200, 
-      headers: { 
-        'Content-Type': 'application/pdf', 
-        'Content-Disposition': `attachment; filename="invoice-${order.orderNumber}.pdf"` 
-      } 
-    })
+    // Use pdf-lib directly for Vercel free tier compatibility
+    try {
+      const pdfBuffer = await buildInvoicePdf(order, methods, brandColor)
+      return new NextResponse(pdfBuffer, { 
+        status: 200, 
+        headers: { 
+          'Content-Type': 'application/pdf', 
+          'Content-Disposition': `attachment; filename="invoice-${order.orderNumber}.pdf"` 
+        } 
+      })
+    } catch (pdfError) {
+      console.log('PDF generation failed, returning HTML:', (pdfError as Error).message)
+      return new NextResponse(html, {
+        status: 200,
+        headers: {
+          'Content-Type': 'text/html',
+          'Content-Disposition': `inline; filename="invoice-${order.orderNumber}.html"`
+        }
+      })
+    }
   } catch (err) {
     console.error('Failed to generate PDF invoice:', err)
     return NextResponse.json({ error: 'Failed to generate PDF invoice' }, { status: 500 })

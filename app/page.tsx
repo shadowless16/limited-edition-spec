@@ -6,7 +6,7 @@ import Footer from "@/components/layout/Footer"
 import ProductCard from "@/components/product/ProductCard"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { ArrowRight, Sparkles } from "lucide-react"
+import { ArrowRight, Sparkles, ChevronLeft, ChevronRight } from "lucide-react"
 import Link from "next/link"
 
 interface Product {
@@ -22,6 +22,75 @@ interface Product {
     stock: number
   }>
   launchDate?: string
+}
+
+function HeroImageCarousel() {
+  const [heroImages, setHeroImages] = useState<string[]>([])
+  const [currentIndex, setCurrentIndex] = useState(0)
+
+  useEffect(() => {
+    ;(async () => {
+      try {
+        const resp = await fetch('/api/admin/settings')
+        if (resp.ok) {
+          const data = await resp.json()
+          if (data.heroImages && Array.isArray(data.heroImages)) {
+            setHeroImages(data.heroImages.filter(Boolean))
+          }
+        }
+      } catch (e) {
+        console.error('Failed to load hero images:', e)
+      }
+    })()
+  }, [])
+
+  const nextImage = () => {
+    setCurrentIndex((prev) => (prev + 1) % Math.max(heroImages.length, 1))
+  }
+
+  const prevImage = () => {
+    setCurrentIndex((prev) => (prev - 1 + Math.max(heroImages.length, 1)) % Math.max(heroImages.length, 1))
+  }
+
+  return (
+    <div className="relative h-[400px] sm:h-[500px] lg:h-[600px] xl:h-[700px] order-1 lg:order-2">
+      <div className="absolute inset-0 bg-gradient-to-t from-background/20 to-transparent rounded-2xl overflow-hidden">
+        {heroImages.length > 0 ? (
+          <img 
+            src={heroImages[currentIndex]} 
+            alt="Hero Product" 
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <div className="w-full h-full bg-gradient-to-br from-primary/10 to-accent/20 flex items-center justify-center">
+            <div className="text-center text-muted-foreground">
+              <div className="w-24 h-24 lg:w-32 lg:h-32 mx-auto mb-4 bg-muted rounded-full flex items-center justify-center">
+                <Sparkles className="w-12 h-12 lg:w-16 lg:h-16" />
+              </div>
+              <p className="text-base lg:text-lg">Hero Product Image</p>
+            </div>
+          </div>
+        )}
+      </div>
+      
+      {heroImages.length > 1 && (
+        <>
+          <button 
+            onClick={prevImage}
+            className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 lg:w-12 lg:h-12 bg-background/80 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-background transition-colors"
+          >
+            <ChevronLeft className="w-4 h-4 lg:w-5 lg:h-5" />
+          </button>
+          <button 
+            onClick={nextImage}
+            className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 lg:w-12 lg:h-12 bg-background/80 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-background transition-colors"
+          >
+            <ChevronRight className="w-4 h-4 lg:w-5 lg:h-5" />
+          </button>
+        </>
+      )}
+    </div>
+  )
 }
 
 export default function HomePage() {
@@ -95,56 +164,39 @@ export default function HomePage() {
       <Header />
 
       {/* Hero Section */}
-      <section className="relative min-h-[80vh] flex items-center justify-between px-4 bg-gradient-to-br from-background via-background to-muted/30">
-        <div className="container max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-          {/* Left Content */}
-          <div className="space-y-8 text-left">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/20 text-accent text-sm font-medium uppercase tracking-wide">
-              Urban Edge
-            </div>
+      <section className="relative min-h-screen flex items-center px-4 bg-gradient-to-br from-background via-background to-muted/30">
+        <div className="container max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center min-h-[calc(100vh-80px)]">
+            {/* Left Content */}
+            <div className="space-y-6 lg:space-y-8 text-left order-2 lg:order-1">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/20 text-accent text-sm font-medium uppercase tracking-wide">
+                Urban Edge
+              </div>
 
-            <div className="space-y-4">
-              <h1 className="text-5xl md:text-7xl font-bold leading-tight">
-                Àníkẹ́ Bákàrè
-                <br />
-                <span className="text-primary">Limited Editions</span>
-              </h1>
-              <p className="text-xl text-muted-foreground max-w-lg">
-                Prepaid. Made-to-order. No overproduction.
-                <br />
-                <span className="font-medium">Secure your piece before it's gone forever.</span>
-              </p>
-            </div>
+              <div className="space-y-4">
+                <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold leading-tight">
+                  Àníkẹ́ Bákàrè
+                  <br />
+                  <span className="text-primary">Limited Editions</span>
+                </h1>
+                <p className="text-lg lg:text-xl text-muted-foreground max-w-lg">
+                  Prepaid. Made-to-order. No overproduction.
+                  <br />
+                  <span className="font-medium">Secure your piece before it's gone forever.</span>
+                </p>
+              </div>
 
-            <div className="pt-4">
-              <Button size="lg" className="px-8 py-3 text-base font-medium" asChild>
-                <Link href="/products">
-                  Discover Now
-                </Link>
-              </Button>
-            </div>
-          </div>
-
-          {/* Right Content - Hero Image */}
-          <div className="relative h-[600px] lg:h-[700px]">
-            <div className="absolute inset-0 bg-gradient-to-t from-background/20 to-transparent rounded-2xl overflow-hidden">
-              <div className="w-full h-full bg-gradient-to-br from-primary/10 to-accent/20 flex items-center justify-center">
-                <div className="text-center text-muted-foreground">
-                  <div className="w-32 h-32 mx-auto mb-4 bg-muted rounded-full flex items-center justify-center">
-                    <Sparkles className="w-16 h-16" />
-                  </div>
-                  <p className="text-lg">Hero Product Image</p>
-                </div>
+              <div className="pt-4">
+                <Button size="lg" className="px-8 py-3 text-base font-medium" asChild>
+                  <Link href="/products">
+                    Discover Now
+                  </Link>
+                </Button>
               </div>
             </div>
-            
-            {/* Navigation Arrows */}
-            <button className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-background/80 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-background transition-colors">
-              <ArrowRight className="w-5 h-5 rotate-180" />
-            </button>
-            <button className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-background/80 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-background transition-colors">
-              <ArrowRight className="w-5 h-5" />
-            </button>
+
+            {/* Right Content - Hero Image */}
+            <HeroImageCarousel />
           </div>
         </div>
       </section>
@@ -162,7 +214,7 @@ export default function HomePage() {
           </div>
 
           {isLoading ? (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6">
               {[...Array(8)].map((_, i) => (
                 <div key={i} className="animate-pulse">
                   <div className="aspect-square bg-muted rounded-lg mb-4"></div>
@@ -172,18 +224,26 @@ export default function HomePage() {
               ))}
             </div>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6">
               {featuredProducts.concat(featuredProducts).slice(0, 8).map((product, index) => (
                 <div key={`${product._id}-${index}`} className="group">
                   <div className="bg-card rounded-lg overflow-hidden border hover:shadow-lg transition-shadow">
                     <Link href={`/product/${product._id}`}>
-                      <div className="aspect-square bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center relative">
-                        <div className="text-center text-muted-foreground">
-                          <div className="w-16 h-16 mx-auto mb-2 bg-muted-foreground/20 rounded-full flex items-center justify-center">
-                            <Sparkles className="w-8 h-8" />
+                      <div className="aspect-square bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center relative overflow-hidden">
+                        {product.images && product.images.length > 0 ? (
+                          <img 
+                            src={product.images[0]} 
+                            alt={product.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="text-center text-muted-foreground">
+                            <div className="w-16 h-16 mx-auto mb-2 bg-muted-foreground/20 rounded-full flex items-center justify-center">
+                              <Sparkles className="w-8 h-8" />
+                            </div>
+                            <p className="text-sm">Product</p>
                           </div>
-                          <p className="text-sm">Product</p>
-                        </div>
+                        )}
                         {product.status === "waitlist" && (
                           <div className="absolute top-3 left-3">
                             <Badge variant="secondary" className="bg-accent text-accent-foreground text-xs">
@@ -243,7 +303,7 @@ export default function HomePage() {
       {/* Featured Collections */}
       <section className="py-20 px-4">
         <div className="container max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
             {/* Left Collection */}
             <div className="relative h-[500px] rounded-2xl overflow-hidden group cursor-pointer">
               <div className="absolute inset-0 bg-gradient-to-br from-muted to-muted/80 flex items-center justify-center">
@@ -286,7 +346,7 @@ export default function HomePage() {
           </div>
 
           {/* Bottom Collections */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 mt-6 lg:mt-8">
             {/* Urban Streetwear */}
             <div className="relative h-[300px] rounded-2xl overflow-hidden group cursor-pointer">
               <div className="absolute inset-0 bg-gradient-to-br from-accent/30 to-secondary/40 flex items-center justify-center">
