@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Plus, X } from "lucide-react"
+import { Plus, X, Calendar as CalendarIcon } from "lucide-react"
 import ImageUpload from "./ImageUpload"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Calendar } from "@/components/ui/calendar"
@@ -243,7 +243,15 @@ export default function CreateProductModal({ onProductCreated, product, onProduc
     return (
       <Popover>
         <PopoverTrigger asChild>
-          <Input readOnly value={value} />
+          <div className="relative">
+            <Input 
+              readOnly 
+              value={value ? new Date(value).toLocaleDateString() : ""} 
+              placeholder="Select date"
+              className="pr-10 cursor-pointer"
+            />
+            <CalendarIcon className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+          </div>
         </PopoverTrigger>
         <PopoverContent>
           <Calendar
@@ -379,45 +387,7 @@ export default function CreateProductModal({ onProductCreated, product, onProduc
             </CardContent>
           </Card>
 
-          {/* Payment Options - separate card to make it more visible in the modal */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Payment Options</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground mb-2">Select which payment methods are accepted for this product. These are shown on the admin list and at checkout.</p>
-              <div className="space-y-2">
-                <label className="flex items-center gap-2">
-                  <input
-                    data-testid="payment-bank"
-                    type="checkbox"
-                    checked={formData.paymentOptions.includes("bank_transfer")}
-                    onChange={() => {
-                      const next = formData.paymentOptions.includes("bank_transfer")
-                        ? formData.paymentOptions.filter((p) => p !== "bank_transfer")
-                        : [...formData.paymentOptions, "bank_transfer"]
-                      setFormData({ ...formData, paymentOptions: next })
-                    }}
-                  />
-                  Bank Transfer
-                </label>
-                <label className="flex items-center gap-2">
-                  <input
-                    data-testid="payment-crypto"
-                    type="checkbox"
-                    checked={formData.paymentOptions.includes("crypto")}
-                    onChange={() => {
-                      const next = formData.paymentOptions.includes("crypto")
-                        ? formData.paymentOptions.filter((p) => p !== "crypto")
-                        : [...formData.paymentOptions, "crypto"]
-                      setFormData({ ...formData, paymentOptions: next })
-                    }}
-                  />
-                  Crypto
-                </label>
-              </div>
-            </CardContent>
-          </Card>
+
 
           {/* Images */}
           <Card>

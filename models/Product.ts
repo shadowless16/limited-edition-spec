@@ -125,7 +125,9 @@ const ProductSchema = new Schema<IProduct>(
         },
       },
       press: {
-        ...ReleasePhaseSchema.obj,
+        startDate: { type: Date, required: false },
+        endDate: { type: Date, required: false },
+        isActive: { type: Boolean, default: false },
         maxQuantity: { type: Number, default: 10, min: 1 }, // 10 pieces max
         exclusiveFabric: { type: String }, // 1 exclusive fabric
         secretColors: [{ type: String }], // Up to 5 secret colors
