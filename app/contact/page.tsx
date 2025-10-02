@@ -47,7 +47,7 @@ export default function ContactPage() {
               <Mail className="h-6 w-6 text-primary mt-1" />
               <div>
                 <h3 className="font-medium">Email</h3>
-                <p className="text-muted-foreground">support@mixtas.com</p>
+                <p className="text-muted-foreground">support@Àníkẹ́ Bákàrè.com</p>
                 <p className="text-sm text-muted-foreground">We'll respond within 24 hours</p>
               </div>
             </div>

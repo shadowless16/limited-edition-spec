@@ -8,7 +8,7 @@ export default function Footer() {
         <div className="grid md:grid-cols-4 gap-8">
           <div>
             <div className="mb-6">
-              <span className="font-bold text-2xl tracking-wide">Mixtas</span>
+              <span className="font-bold text-2xl tracking-wide">Àníkẹ́ Bákàrè</span>
             </div>
             <p className="text-background/80 text-sm leading-relaxed mb-6">
               Premium fashion for the modern lifestyle. Discover our curated collection of contemporary designs.
@@ -121,7 +121,7 @@ export default function Footer() {
         <div className="border-t border-background/20 mt-12 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <p className="text-background/60 text-sm mb-4 md:mb-0">
-              © 2024 Mixtas. All rights reserved.
+              © 2024 Àníkẹ́ Bákàrè. All rights reserved.
             </p>
             <div className="flex space-x-6 text-sm">
               <Link href="/terms" className="text-background/60 hover:text-background transition-colors">

@@ -16,7 +16,7 @@ export default function AboutPage() {
         <div className="text-center mb-16">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/10 text-accent text-sm font-medium mb-6">
             <Sparkles className="h-4 w-4" />
-            About Mixtas
+            About Àníkẹ́ Bákàrè
           </div>
           <h1 className="text-4xl font-bold mb-4">Premium Fashion for Modern Living</h1>
           <p className="text-lg text-muted-foreground text-pretty max-w-2xl mx-auto">

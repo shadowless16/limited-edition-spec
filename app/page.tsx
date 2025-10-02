@@ -301,11 +301,11 @@ export default function HomePage() {
       </section>
 
       {/* Featured Collections */}
-      <section className="py-20 px-4">
+      {/* <section className="py-20 px-4">
         <div className="container max-w-7xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
             {/* Left Collection */}
-            <div className="relative h-[500px] rounded-2xl overflow-hidden group cursor-pointer">
+            {/* <div className="relative h-[500px] rounded-2xl overflow-hidden group cursor-pointer">
               <div className="absolute inset-0 bg-gradient-to-br from-muted to-muted/80 flex items-center justify-center">
                 <div className="text-center text-muted-foreground">
                   <div className="w-24 h-24 mx-auto mb-4 bg-muted-foreground/20 rounded-full flex items-center justify-center">
@@ -322,10 +322,10 @@ export default function HomePage() {
                   Shop Now
                 </Button>
               </div>
-            </div>
+            </div> */}
 
             {/* Right Collection */}
-            <div className="relative h-[500px] rounded-2xl overflow-hidden group cursor-pointer">
+            {/* <div className="relative h-[500px] rounded-2xl overflow-hidden group cursor-pointer">
               <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-accent/30 flex items-center justify-center">
                 <div className="text-center text-muted-foreground">
                   <div className="w-24 h-24 mx-auto mb-4 bg-muted-foreground/20 rounded-full flex items-center justify-center">
@@ -342,13 +342,13 @@ export default function HomePage() {
                   Shop Now
                 </Button>
               </div>
-            </div>
-          </div>
+            </div> */}
+          {/* </div> */}
 
           {/* Bottom Collections */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 mt-6 lg:mt-8">
+          {/* <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 mt-6 lg:mt-8">
             {/* Urban Streetwear */}
-            <div className="relative h-[300px] rounded-2xl overflow-hidden group cursor-pointer">
+            {/* <div className="relative h-[300px] rounded-2xl overflow-hidden group cursor-pointer">
               <div className="absolute inset-0 bg-gradient-to-br from-accent/30 to-secondary/40 flex items-center justify-center">
                 <div className="text-center text-muted-foreground">
                   <div className="w-16 h-16 mx-auto mb-2 bg-muted-foreground/20 rounded-full flex items-center justify-center">
@@ -365,10 +365,10 @@ export default function HomePage() {
                   Shop Now
                 </Button>
               </div>
-            </div>
+            </div> */}
 
             {/* Trendsetting Bags */}
-            <div className="relative h-[300px] rounded-2xl overflow-hidden group cursor-pointer bg-primary">
+            {/* <div className="relative h-[300px] rounded-2xl overflow-hidden group cursor-pointer bg-primary">
               <div className="absolute inset-0 flex items-center justify-center text-white">
                 <div className="text-center">
                   <h3 className="text-4xl font-bold mb-4">Trendsetting Bags for Her</h3>
@@ -378,10 +378,10 @@ export default function HomePage() {
                   </Button>
                 </div>
               </div>
-            </div>
-          </div>
-        </div>
-      </section>
+            </div> */}
+          {/* </div> */}
+        {/* </div> */}
+      {/* </section> */}
       
       <Footer />
     </div>

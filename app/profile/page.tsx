@@ -104,7 +104,7 @@ export default function ProfilePage() {
               </CardContent>
             </Card>
 
-            <Card className="border-primary/20">
+            {/* <Card className="border-primary/20">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Star className="h-5 w-5 text-primary" />
@@ -117,7 +117,7 @@ export default function ProfilePage() {
                 </p>
                 <Button className="w-full">Learn More</Button>
               </CardContent>
-            </Card>
+            </Card> */}
           </div>
         </div>
       </div>
