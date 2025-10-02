@@ -48,7 +48,7 @@ export default function ProfilePage() {
               </CardContent>
             </Card>
 
-            <Card>
+            {/* <Card>
               <CardHeader>
                 <CardTitle>Notification Preferences</CardTitle>
               </CardHeader>
@@ -81,7 +81,7 @@ export default function ProfilePage() {
                   </Button>
                 </div>
               </CardContent>
-            </Card>
+            </Card> */}
           </div>
 
           <div className="space-y-6">

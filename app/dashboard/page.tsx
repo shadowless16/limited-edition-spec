@@ -65,12 +65,12 @@ export default function Dashboard() {
 
       if (waitlistRes.ok) {
         const waitlistData = await waitlistRes.json()
-        setWaitlistEntries(waitlistData)
+        setWaitlistEntries(Array.isArray(waitlistData) ? waitlistData : [])
       }
 
       if (ordersRes.ok) {
         const ordersData = await ordersRes.json()
-        setOrders(ordersData)
+        setOrders(Array.isArray(ordersData) ? ordersData : [])
       }
     } catch (error) {
       console.error("Error fetching dashboard data:", error)
@@ -161,7 +161,7 @@ export default function Dashboard() {
               <CheckCircle className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">${orders.reduce((sum, order) => sum + order.totalAmount, 0)}</div>
+              <div className="text-2xl font-bold">₦{(orders.reduce((sum, order) => sum + (order.total || 0), 0) / 100).toFixed(0)}</div>
               <p className="text-xs text-muted-foreground">Lifetime value</p>
             </CardContent>
           </Card>
@@ -259,9 +259,9 @@ export default function Dashboard() {
                         {order.items.map((item, index) => (
                           <div key={index} className="flex items-center justify-between text-sm">
                             <span>
-                              {item.productId.name} × {item.quantity}
+                              {item.productId?.name || 'Product'} × {item.quantity}
                             </span>
-                            <span>${item.unitPrice * item.quantity}</span>
+                            <span>₦{((item.unitPrice || 0) * item.quantity / 100).toFixed(0)}</span>
                           </div>
                         ))}
                       </div>
@@ -269,7 +269,7 @@ export default function Dashboard() {
                       <div className="border-t pt-2 mt-2">
                         <div className="flex items-center justify-between font-semibold">
                           <span>Total</span>
-                          <span>${order.totalAmount}</span>
+                          <span>₦{((order.total || 0) / 100).toFixed(0)}</span>
                         </div>
                       </div>
                     </CardContent>

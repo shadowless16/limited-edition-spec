@@ -43,10 +43,41 @@ export default function OrdersPage() {
 
   const fetchOrders = async () => {
     try {
-      const response = await fetch("/api/user/orders")
+      const token = localStorage.getItem("token")
+      if (!token) {
+        window.location.href = "/"
+        return
+      }
+
+      const response = await fetch("/api/orders", {
+        headers: { Authorization: `Bearer ${token}` },
+      })
       if (response.ok) {
         const data = await response.json()
-        setOrders(data)
+        // Transform API data to match component expectations
+        const transformedOrders = Array.isArray(data) ? data.map(order => ({
+          _id: order._id,
+          orderNumber: order.orderNumber,
+          status: order.status,
+          items: order.items?.map((item: any) => ({
+            productName: item.productId?.name || 'Product',
+            productImage: item.productId?.images?.[0] || '',
+            variant: { color: 'N/A', material: 'N/A' },
+            quantity: item.quantity,
+            price: item.unitPrice || 0
+          })) || [],
+          total: order.total || 0,
+          createdAt: order.createdAt,
+          shippingAddress: order.shippingAddress || {
+            name: 'N/A',
+            street: 'N/A',
+            city: 'N/A',
+            state: 'N/A',
+            zipCode: 'N/A'
+          },
+          trackingNumber: order.trackingNumber
+        })) : []
+        setOrders(transformedOrders)
       }
     } catch (error) {
       console.error("Error fetching orders:", error)
@@ -174,7 +205,7 @@ export default function OrdersPage() {
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className="font-medium">{formatPrice(item.price * item.quantity)}</p>
+                        <p className="font-medium">₦{((item.price * item.quantity) / 100).toFixed(0)}</p>
                       </div>
                     </div>
                   ))}
@@ -189,7 +220,7 @@ export default function OrdersPage() {
                     {order.trackingNumber && <p className="text-sm text-primary">Tracking: {order.trackingNumber}</p>}
                   </div>
                   <div className="text-right">
-                    <p className="text-lg font-semibold">{formatPrice(order.total)}</p>
+                    <p className="text-lg font-semibold">₦{(order.total / 100).toFixed(0)}</p>
                   </div>
                 </div>
               </CardContent>
