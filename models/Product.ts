@@ -5,6 +5,7 @@ interface IVariant {
   material: string
   stock: number
   reservedStock: number
+  images?: string[]
 }
 
 interface IReleasePhases {
@@ -67,6 +68,7 @@ const VariantSchema = new Schema<IVariant>({
   material: { type: String, required: true },
   stock: { type: Number, required: true, min: 0 },
   reservedStock: { type: Number, default: 0, min: 0 },
+  images: [{ type: String }],
 })
 
 const ReleasePhaseSchema = new Schema({

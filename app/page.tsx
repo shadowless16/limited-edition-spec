@@ -225,8 +225,8 @@ export default function HomePage() {
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6">
-              {featuredProducts.concat(featuredProducts).slice(0, 8).map((product, index) => (
-                <div key={`${product._id}-${index}`} className="group">
+              {featuredProducts.map((product, index) => (
+                <div key={product._id} className="group">
                   <div className="bg-card rounded-lg overflow-hidden border hover:shadow-lg transition-shadow">
                     <Link href={`/product/${product._id}`}>
                       <div className="aspect-square bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center relative overflow-hidden">

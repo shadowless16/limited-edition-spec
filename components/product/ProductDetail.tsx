@@ -25,6 +25,7 @@ interface ProductDetailProps {
       color: string
       material: string
       stock: number
+      images?: string[]
     }>
     phases: {
       waitlist?: { startDate: string; endDate?: string }
@@ -42,6 +43,7 @@ interface ProductDetailProps {
 
 export default function ProductDetail({ product, user }: ProductDetailProps) {
   const [selectedVariant, setSelectedVariant] = useState(0)
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0)
   const [email, setEmail] = useState(user?.email || "")
   const [phone, setPhone] = useState("")
   const [isLoading, setIsLoading] = useState(false)
@@ -53,6 +55,19 @@ export default function ProductDetail({ product, user }: ProductDetailProps) {
   // Ensure we have a safe variants array and a fallback currentVariant to avoid runtime errors
   const variants = product.variants || []
   const currentVariant = variants[selectedVariant] ?? variants[0] ?? { color: "", material: "", stock: 0 }
+  
+  // Get images for current variant, fallback to product images, then to placeholder
+  const currentImages = currentVariant?.images?.length ? currentVariant.images : (product.images?.length ? product.images : ["/placeholder.svg?height=600&width=600"])
+  
+  // Debug logging
+  console.log('Product images:', product.images)
+  console.log('Current variant:', currentVariant)
+  console.log('Current images:', currentImages)
+  
+  // Reset image index when variant changes
+  useEffect(() => {
+    setSelectedImageIndex(0)
+  }, [selectedVariant])
 
   const pricingResult = calculatePhasePrice(
     product.basePrice,
@@ -509,8 +524,8 @@ export default function ProductDetail({ product, user }: ProductDetailProps) {
           <div className="space-y-4">
             <div className="aspect-square relative rounded-lg overflow-hidden bg-muted">
               <Image
-                src={product.images[0] || "/placeholder.svg?height=600&width=600"}
-                alt={product.name}
+                src={currentImages?.[selectedImageIndex] || currentImages?.[0] || "/placeholder.svg?height=600&width=600"}
+                alt={`${product.name} - ${currentVariant.color} ${currentVariant.material}`}
                 fill
                 className="object-cover"
               />
@@ -525,13 +540,19 @@ export default function ProductDetail({ product, user }: ProductDetailProps) {
             </div>
             
             {/* Image Thumbnails */}
-            {product.images && product.images.length > 1 && (
+            {currentImages && currentImages.length > 1 && (
               <div className="flex gap-2 overflow-x-auto">
-                {product.images.map((image, index) => (
-                  <div key={index} className="flex-shrink-0 w-20 h-20 relative rounded-lg overflow-hidden bg-muted cursor-pointer border-2 border-transparent hover:border-primary">
+                {currentImages.map((image, index) => (
+                  <div 
+                    key={index} 
+                    className={`flex-shrink-0 w-20 h-20 relative rounded-lg overflow-hidden bg-muted cursor-pointer border-2 transition-colors ${
+                      selectedImageIndex === index ? 'border-primary' : 'border-transparent hover:border-primary'
+                    }`}
+                    onClick={() => setSelectedImageIndex(index)}
+                  >
                     <Image
                       src={image}
-                      alt={`${product.name} ${index + 1}`}
+                      alt={`${product.name} ${currentVariant.color} ${currentVariant.material} ${index + 1}`}
                       fill
                       className="object-cover"
                     />
