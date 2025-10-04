@@ -18,6 +18,7 @@ interface UserInterface {
   id: string
   name: string
   email: string
+  ownerTag?: string
   role: string
 }
 

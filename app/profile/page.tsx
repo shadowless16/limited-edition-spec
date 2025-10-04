@@ -1,3 +1,6 @@
+"use client"
+
+import { useState, useEffect } from "react"
 import Header from "@/components/layout/Header"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -7,7 +10,58 @@ import { Badge } from "@/components/ui/badge"
 import { User, ArrowLeft, Star } from "lucide-react"
 import Link from "next/link"
 
+interface UserData {
+  id: string
+  name: string
+  email: string
+  ownerTag?: string
+  role: string
+}
+
 export default function ProfilePage() {
+  const [user, setUser] = useState<UserData | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    fetchUserData()
+  }, [])
+
+  const fetchUserData = async () => {
+    try {
+      const token = localStorage.getItem("token")
+      if (!token) {
+        window.location.href = "/"
+        return
+      }
+
+      const response = await fetch("/api/auth/me", {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+
+      if (response.ok) {
+        const userData = await response.json()
+        setUser(userData)
+      }
+    } catch (error) {
+      console.error("Error fetching user data:", error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="container max-w-4xl mx-auto px-4 py-12">
+          <div className="animate-pulse space-y-4">
+            <div className="h-8 bg-muted rounded w-1/4"></div>
+            <div className="h-64 bg-muted rounded"></div>
+          </div>
+        </div>
+      </div>
+    )
+  }
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -94,12 +148,19 @@ export default function ProfilePage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center gap-2">
-                  <Badge variant="outline">Regular Member</Badge>
+                  <Badge variant="outline">{user?.role === 'admin' ? 'Admin' : 'Regular Member'}</Badge>
                 </div>
+                {user?.ownerTag && (
+                  <div className="p-3 bg-muted rounded-lg">
+                    <p className="text-sm font-medium mb-1">Owner Tag</p>
+                    <p className="font-mono text-lg font-bold">{user.ownerTag}</p>
+                    <p className="text-xs text-muted-foreground mt-1">Your unique authenticity identifier</p>
+                  </div>
+                )}
                 <div className="text-sm text-muted-foreground">
+                  <p>Email: {user?.email}</p>
                   <p>Member since: January 2024</p>
                   <p>Total orders: 0</p>
-                  <p>Waitlist positions: 2</p>
                 </div>
               </CardContent>
             </Card>

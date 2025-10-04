@@ -21,6 +21,14 @@ interface WaitlistEntry {
   createdAt: string
 }
 
+interface User {
+  id: string
+  name: string
+  email: string
+  ownerTag?: string
+  role: string
+}
+
 interface Order {
   _id: string
   items: Array<{
@@ -38,6 +46,7 @@ interface Order {
 }
 
 export default function Dashboard() {
+  const [user, setUser] = useState<User | null>(null)
   const [waitlistEntries, setWaitlistEntries] = useState<WaitlistEntry[]>([])
   const [orders, setOrders] = useState<Order[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -54,7 +63,10 @@ export default function Dashboard() {
         return
       }
 
-      const [waitlistRes, ordersRes] = await Promise.all([
+      const [userRes, waitlistRes, ordersRes] = await Promise.all([
+        fetch("/api/auth/me", {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
         fetch("/api/user/waitlist", {
           headers: { Authorization: `Bearer ${token}` },
         }),
@@ -62,6 +74,11 @@ export default function Dashboard() {
           headers: { Authorization: `Bearer ${token}` },
         }),
       ])
+
+      if (userRes.ok) {
+        const userData = await userRes.json()
+        setUser(userData)
+      }
 
       if (waitlistRes.ok) {
         const waitlistData = await waitlistRes.json()
@@ -128,7 +145,12 @@ export default function Dashboard() {
       <Header />
       <div className="max-w-4xl mx-auto space-y-6 p-4">
         <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold">My Dashboard</h1>
+          <div>
+            <h1 className="text-3xl font-bold">My Dashboard</h1>
+            {user?.ownerTag && (
+              <p className="text-muted-foreground mt-1">Owner Tag: <span className="font-mono font-semibold">{user.ownerTag}</span></p>
+            )}
+          </div>
         </div>
 
         {/* Stats Cards */}
