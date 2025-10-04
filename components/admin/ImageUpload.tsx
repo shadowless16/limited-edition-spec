@@ -33,6 +33,7 @@ export default function ImageUpload({ images, onImagesChange, maxImages = 5 }: I
   }, [images])
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    event.stopPropagation()
     const files = Array.from(event.target.files || [])
     if (files.length === 0) return
 
@@ -160,7 +161,11 @@ export default function ImageUpload({ images, onImagesChange, maxImages = 5 }: I
                 <Button
                   variant="ghost"
                   className="h-full w-full flex-col gap-2"
-                  onClick={() => fileInputRef.current?.click()}
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    fileInputRef.current?.click()
+                  }}
                   disabled={isUploading}
                 >
                   {isUploading ? (
