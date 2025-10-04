@@ -59,11 +59,6 @@ export default function ProductDetail({ product, user }: ProductDetailProps) {
   // Get images for current variant, fallback to product images, then to placeholder
   const currentImages = currentVariant?.images?.length ? currentVariant.images : (product.images?.length ? product.images : ["/placeholder.svg?height=600&width=600"])
   
-  // Debug logging
-  console.log('Product images:', product.images)
-  console.log('Current variant:', currentVariant)
-  console.log('Current images:', currentImages)
-  
   // Reset image index when variant changes
   useEffect(() => {
     setSelectedImageIndex(0)

@@ -17,6 +17,7 @@ export async function GET(request: NextRequest) {
       id: user.id,
       name: user.name,
       email: user.email,
+      ownerTag: user.ownerTag,
       role: user.role || "user",
       priorityClub: user.priorityClub || false,
     })

@@ -9,6 +9,7 @@ export interface COAData {
   purchaseDate: Date
   customerName: string
   customerEmail: string
+  ownerTag?: string
   phase: "originals" | "echo" | "press"
   authenticity: {
     signature: string
@@ -58,6 +59,7 @@ export class COAGenerator {
       purchaseDate: order.createdAt,
       customerName: `${user.firstName} ${user.lastName}`,
       customerEmail: user.email,
+      ownerTag: user.ownerTag,
       phase: order.phase,
       authenticity: {
         signature: "VERIFIED_AUTHENTIC",
@@ -82,6 +84,7 @@ Product: ${coaData.productName}
 Serial Number: ${coaData.serialNumber}
 Piece Number: ${coaData.pieceNumber}
 Edition: ${coaData.phase.toUpperCase()}
+${coaData.ownerTag ? `Owner Tag: ${coaData.ownerTag}` : ''}
 
 Owner: ${coaData.customerName}
 Email: ${coaData.customerEmail}

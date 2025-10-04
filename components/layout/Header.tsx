@@ -101,6 +101,9 @@ export default function Header() {
             <Link href="/products" className="text-sm font-medium hover:text-primary transition-colors">
               Shop
             </Link>
+            <Link href="/verify" className="text-sm font-medium hover:text-primary transition-colors">
+              Verify
+            </Link>
             <Link href="/about" className="text-sm font-medium hover:text-primary transition-colors">
               About
             </Link>
@@ -184,6 +187,13 @@ export default function Header() {
                 onClick={() => setIsMenuOpen(false)}
               >
                 Shop
+              </Link>
+              <Link
+                href="/verify"
+                className="block py-2 text-sm font-medium hover:text-primary transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Verify
               </Link>
               <Link
                 href="/about"

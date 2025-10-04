@@ -10,7 +10,6 @@ export async function POST(request: NextRequest) {
     const { productId, variantId, email, phone, paymentIntentId } = await request.json()
 
     if (!productId) return NextResponse.json({ error: "productId required" }, { status: 400 })
-    if (!paymentIntentId) return NextResponse.json({ error: "Payment required for Echo requests" }, { status: 400 })
 
     // Get product to calculate amount
     const { Product } = await import("@/models/Product")
@@ -39,8 +38,8 @@ export async function POST(request: NextRequest) {
       contactEmail: email, 
       contactPhone: phone,
       amount: product.basePrice,
-      paymentStatus: "escrowed",
-      paymentIntentId,
+      paymentStatus: paymentIntentId ? "escrowed" : "pending",
+      paymentIntentId: paymentIntentId || null,
       escrowReleaseDate
     })
     await doc.save()

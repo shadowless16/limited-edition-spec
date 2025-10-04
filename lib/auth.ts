@@ -7,6 +7,7 @@ export interface AuthUser {
   userId?: string
   email?: string
   name?: string
+  ownerTag?: string
   role?: "admin" | "user" | string
   priorityClub?: boolean
   isAdmin?: boolean

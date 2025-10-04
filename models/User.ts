@@ -6,6 +6,7 @@ export interface IUser extends Document {
   firstName: string
   lastName: string
   password: string
+  ownerTag?: string
   priorityClub: boolean
   isAdmin?: boolean
   isInfluencer?: boolean
@@ -51,6 +52,12 @@ const UserSchema = new Schema<IUser>(
       type: String,
       required: true,
       select: false,
+    },
+    ownerTag: {
+      type: String,
+      unique: true,
+      sparse: true,
+      trim: true,
     },
     priorityClub: {
       type: Boolean,
