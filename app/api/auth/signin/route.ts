@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs"
 import jwt from "jsonwebtoken"
 import { connectToDatabase } from "@/lib/mongodb"
 import { User } from "@/models/User"
+import { generateOwnerTag } from "@/lib/owner-tag"
 
 export async function POST(request: NextRequest) {
   try {
@@ -26,9 +27,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid credentials" }, { status: 401 })
     }
 
+    // Generate owner tag for existing users who don't have one
+    if (!user.ownerTag) {
+      user.ownerTag = generateOwnerTag(user.firstName, user.lastName, user.phone)
+      await user.save()
+    }
+
     // Generate JWT token
     const role = user.isAdmin ? "admin" : "user"
-    const token = jwt.sign({ userId: user._id, email: user.email, isAdmin: user.isAdmin, role }, process.env.JWT_SECRET || "fallback-secret", {
+    const token = jwt.sign({ userId: user._id, email: user.email, isAdmin: user.isAdmin, role, ownerTag: user.ownerTag }, process.env.JWT_SECRET || "fallback-secret", {
       expiresIn: "7d",
     })
 
@@ -38,6 +45,7 @@ export async function POST(request: NextRequest) {
       email: user.email,
       firstName: user.firstName,
       lastName: user.lastName,
+      ownerTag: user.ownerTag,
       priorityClub: user.priorityClub,
       isAdmin: user.isAdmin,
       role,

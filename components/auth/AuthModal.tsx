@@ -23,6 +23,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const [password, setPassword] = useState("")
   const [firstName, setFirstName] = useState("")
   const [lastName, setLastName] = useState("")
+  const [phone, setPhone] = useState("")
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -56,7 +57,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
       const response = await fetch("/api/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, firstName, lastName, password }),
+        body: JSON.stringify({ email, firstName, lastName, password, phone }),
       })
 
       const data = await response.json()
@@ -174,6 +175,17 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                     </div>
                   </div>
                 </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="signup-phone">Phone (optional)</Label>
+                <Input
+                  id="signup-phone"
+                  type="tel"
+                  placeholder="07075167930"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                />
               </div>
 
               <div className="space-y-2">
