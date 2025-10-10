@@ -16,7 +16,7 @@ import { Package, Truck, CheckCircle, Clock } from "lucide-react"
 interface Order {
   _id: string
   orderNumber: string
-  userId: { email: string; firstName: string; lastName: string }
+  userId: { email: string; firstName: string; lastName: string; ownerTag?: string }
   items: Array<{
     productId: { name: string; sku: string }
     quantity: number
@@ -150,6 +150,7 @@ export default function OrderManagement() {
                   </div>
                   <p className="text-sm text-muted-foreground">
                     {order.userId.firstName} {order.userId.lastName} • {order.userId.email}
+                    {order.userId.ownerTag && <span className="ml-2 text-xs bg-primary/10 text-primary px-2 py-1 rounded">Owner: {order.userId.ownerTag}</span>}
                   </p>
                   <p className="text-sm">
                     {order.items.length} item(s) • ${(order.total / 100).toFixed(2)}

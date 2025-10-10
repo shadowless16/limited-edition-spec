@@ -203,6 +203,9 @@ importers:
       vue-router:
         specifier: latest
         version: 4.5.1(vue@3.5.20(typescript@5.9.2))
+      yt-dlp-wrap:
+        specifier: ^2.3.12
+        version: 2.3.12
       zod:
         specifier: 3.25.67
         version: 3.25.67
@@ -3233,6 +3236,9 @@ packages:
   yauzl@2.10.0:
     resolution: {integrity: sha512-p4a9I6X6nu6IhoGmBqAcbJy1mlC4j27vEPZX9F4L4/vZT3Lyq1VkFHw/V/PUcB9Buo+DG3iHkT0x3Qya58zc3g==}
 
+  yt-dlp-wrap@2.3.12:
+    resolution: {integrity: sha512-P8fJ+6M1YjukyJENCTviNLiZ8mokxprR54ho3DsSKPWDcac489OjRiStGEARJr6un6ETS6goTn4CWl/b/rM3aA==}
+
   zimmerframe@1.1.2:
     resolution: {integrity: sha512-rAbqEGa8ovJy4pyBxZM70hg4pE6gDgaQ0Sl9M3enG3I0d6H4XSAM3GeNGLKnsBpuijUow064sf7ww1nutC5/3w==}
 
@@ -6151,6 +6157,8 @@ snapshots:
     dependencies:
       buffer-crc32: 0.2.13
       fd-slicer: 1.1.0
+
+  yt-dlp-wrap@2.3.12: {}
 
   zimmerframe@1.1.2: {}
 

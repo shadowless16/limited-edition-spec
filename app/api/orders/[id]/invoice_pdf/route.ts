@@ -124,6 +124,17 @@ async function buildInvoiceHtml(order: any, methods: any[], brandColor = '#6b3d2
       font-weight: 300;
     }
     
+    .owner-tag {
+      font-size: 12px;
+      opacity: 0.8;
+      font-weight: 500;
+      margin-top: 5px;
+      background: rgba(255, 255, 255, 0.2);
+      padding: 4px 8px;
+      border-radius: 4px;
+      display: inline-block;
+    }
+    
     .invoice-meta {
       text-align: right;
     }
@@ -397,6 +408,7 @@ async function buildInvoiceHtml(order: any, methods: any[], brandColor = '#6b3d2
         <div class="company-info">
           <h1>Àníkẹ́ Bákàrè</h1>
           <div class="company-tagline">Exclusive Fashion & Luxury Goods</div>
+          ${order.userId?.ownerTag ? `<div class="owner-tag">Owner: ${order.userId.ownerTag}</div>` : ''}
         </div>
         <div class="invoice-meta">
           <div class="invoice-number">Invoice #${order.orderNumber}</div>
@@ -526,6 +538,9 @@ async function buildInvoicePdf(order: any, methods: any[], brandColor = '#6b3d2e
   // Company info (left)
   drawText('LIMITED EDITION SPEC', margin, height - 50, { size: 24, font: helveticaBold, color: [1,1,1] })
   drawText('Exclusive Fashion & Luxury Goods', margin, height - 75, { size: 11, color: [0.9,0.9,0.9] })
+  if (order.userId?.ownerTag) {
+    drawText(`Owner: ${order.userId.ownerTag}`, margin, height - 95, { size: 10, color: [0.8,0.8,0.8] })
+  }
   
   // Invoice details (right)
   drawRightText(`Invoice #${order.orderNumber}`, width - margin, height - 50, { size: 16, font: helveticaBold, color: [1,1,1] })
@@ -674,7 +689,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const { id } = (await params) as { id: string }
     const authUserId = (user as any).userId || (user as any).id
 
-    const order = await Order.findOne({ _id: id, userId: authUserId }).populate("items.productId", "name")
+    const order = await Order.findOne({ _id: id, userId: authUserId })
+      .populate("items.productId", "name")
+      .populate("userId", "firstName lastName email ownerTag")
     if (!order) return NextResponse.json({ error: "Order not found" }, { status: 404 })
 
   const methods = await PaymentMethod.find({ enabled: true }).lean()

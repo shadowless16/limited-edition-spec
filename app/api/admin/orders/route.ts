@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
     if (fulfillmentStatus) query.fulfillmentStatus = fulfillmentStatus
 
     const orders = await Order.find(query)
-      .populate("userId", "email firstName lastName")
+      .populate("userId", "email firstName lastName ownerTag")
       .populate("items.productId", "name sku images")
       .sort({ createdAt: -1 })
       .limit(100)

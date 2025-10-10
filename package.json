@@ -9,7 +9,6 @@
     "start": "next start",
     "seed-products": "node scripts/seed-products.js",
     "test": "node validate-features.js",
-
     "test:simple": "node test-simple.js"
   },
   "dependencies": {
@@ -78,6 +77,7 @@
     "vaul": "^0.9.9",
     "vue": "latest",
     "vue-router": "latest",
+    "yt-dlp-wrap": "^2.3.12",
     "zod": "3.25.67"
   },
   "devDependencies": {
