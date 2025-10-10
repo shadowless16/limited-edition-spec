@@ -1,8 +1,13 @@
-// Simple PDF generation fallback using html-pdf-node
+// Simple PDF generation fallback
 export async function generatePdfFallback(html: string, filename: string): Promise<Buffer> {
   try {
-    // Try to use html-pdf-node as fallback
-    const pdf = await import('html-pdf-node')
+    // Try to use html-pdf-node as fallback if available
+    // @ts-ignore
+    const pdf = await import('html-pdf-node').catch(() => null)
+    
+    if (!pdf) {
+      throw new Error('html-pdf-node not available')
+    }
     
     const options = {
       format: 'A4',

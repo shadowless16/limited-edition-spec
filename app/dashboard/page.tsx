@@ -39,7 +39,7 @@ interface Order {
     quantity: number
     unitPrice: number
   }>
-  totalAmount: number
+  total: number
   status: string
   paymentStatus: string
   createdAt: string
